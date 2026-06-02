@@ -43,7 +43,7 @@ public sealed class RegisterService
 
         await _sessions.AddAsync(session);
 
-        var verificationLink = $"{appBaseUrl}/api/register/email/verify?token={token}";
+        var verificationLink = $"{appBaseUrl}/api/auth/register/email/verify?token={token}";
         await _emailSender.SendVerificationEmailAsync(email, verificationLink);
 
         return session.Id;

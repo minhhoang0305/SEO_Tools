@@ -4,11 +4,20 @@ import { DashboardPage } from '../pages/DashboardPage';
 import { ProjectsPage } from '../pages/ProjectsPage';
 import { AuditsPage } from '../pages/AuditsPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { LoginPage } from '../pages/LoginPage';
+import { RegisterPage } from '../pages/RegisterPage';
+import { RegisterCompletePage } from '../pages/RegisterCompletePage';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { PublicRoute } from '../components/PublicRoute';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <AppLayout />,
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -23,6 +32,30 @@ export const router = createBrowserRouter([
         element: <AuditsPage />,
       },
     ],
+  },
+  {
+    path: '/login',
+    element: (
+      <PublicRoute>
+        <LoginPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: '/register',
+    element: (
+      <PublicRoute>
+        <RegisterPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: '/register/complete',
+    element: (
+      <PublicRoute>
+        <RegisterCompletePage />
+      </PublicRoute>
+    ),
   },
   {
     path: '*',

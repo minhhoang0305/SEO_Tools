@@ -6,6 +6,7 @@ using IdentityService.Infrastructure.Email;
 using Microsoft.EntityFrameworkCore;
 using IdentityService.Api.Middleware;
 using IdentityService.Infrastructure.Options;
+using StackExchange.Redis;
 
 
 
@@ -13,7 +14,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
+    ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379"));
 
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -23,6 +35,7 @@ builder.Services.AddScoped<IUserService, UserRepository>();
 builder.Services.AddScoped<IRegisterRepository, RegisterRepository>();
 builder.Services.AddScoped<RegisterService>();
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<LoginService>();
@@ -52,6 +65,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseMiddleware<TraceIdMiddleware>();
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.MapControllers();
 app.Run();

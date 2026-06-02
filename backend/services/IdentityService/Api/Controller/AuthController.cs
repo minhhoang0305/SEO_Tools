@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using IdentityService.Application.Services;
 using IdentityService.Application.Contracts;
 using IdentityService.Domain.Common;
+using IdentityService.Domain.Interfaces;
 
 namespace IdentityService.Api.Controller;
 
@@ -11,13 +12,15 @@ public class AuthController : ControllerBase
 {
     private readonly RegisterService _registerService;
     private readonly LoginService _loginService;
-    private readonly RefreshService _refeshService;
+    private readonly IRefreshService _refeshService;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(RegisterService registerService, LoginService loginService, JwtService jwtService, RefreshService refreshService)
+    public AuthController(RegisterService registerService, LoginService loginService, IRefreshService refreshService, IConfiguration configuration)
     {
         _registerService = registerService;
         _loginService = loginService;
         _refeshService = refreshService;
+        _configuration = configuration;
     }
 
     [HttpPost("register")]
@@ -38,11 +41,9 @@ public class AuthController : ControllerBase
     {
         var sessionId = await _registerService.VerifyEmailAsync(token);
 
-        return Ok(new
-        {
-            sessionId,
-            message = "Email verified. Continue registration with this sessionId."
-        });
+        var frontendUrl = _configuration["Frontend:RedirectUrl"] ?? "http://localhost:5173/register/complete";
+
+        return Redirect($"{frontendUrl}?sessionId={sessionId}");
     }
 
     [HttpPost("register/complete")]
@@ -70,6 +71,41 @@ public class AuthController : ControllerBase
             access_token = token.AccessToken,
             refresh_token = token.RefreshToken,
             message = "Đăng kí thành công"
+        });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            return BadRequest("Refresh token không được để trống.");
+
+        var result = await _refeshService.RefreshAsync(request.RefreshToken);
+        if (result.IsFailure)
+            return Unauthorized(result.Error);
+
+        var token = result.Value!;
+        return Ok(new
+        {
+            access_token = token.AccessToken,
+            refresh_token = token.RefreshToken,
+            message = "Làm mới token thành công"
+        });
+    }
+
+    [HttpPost("revoke")]
+    public async Task<IActionResult> Revoke([FromBody] RefreshTokenRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            return BadRequest("Refresh token không được để trống.");
+
+        var result = await _refeshService.RevokeAsync(request.RefreshToken);
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return Ok(new
+        {
+            message = "Thu hồi token thành công"
         });
     }
 }
