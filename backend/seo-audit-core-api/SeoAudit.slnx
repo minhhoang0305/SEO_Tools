@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SeoAudit.Api/SeoAudit.Api.csproj" />
+  <Project Path="SeoAudit.Application/SeoAudit.Application.csproj" />
+  <Project Path="SeoAudit.Domain/SeoAudit.Domain.csproj" />
+  <Project Path="SeoAudit.Infrastructure/SeoAudit.Infrastructure.csproj" />
+</Solution>

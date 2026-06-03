@@ -29,6 +29,10 @@ project.assets.json
 appsettings.Local.json
 appsettings.*.Local.json
 secrets.json
+firebase-config.json
+*firebase*service*account*.json
+*service-account*.json
+backend/secrets/
 
 # Python
 __pycache__/
@@ -83,7 +87,6 @@ frontend/.env.*.local
 
 # Docker / local data
 docker-data/
-data/
 tmp/
 temp/
 

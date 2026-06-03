@@ -1,0 +1,19 @@
+@SeoAudit.Api_HostAddress = http://localhost:5113
+@FirebaseIdToken = paste-firebase-id-token-here
+
+GET {{SeoAudit.Api_HostAddress}}/health
+Accept: application/json
+
+###
+
+POST {{SeoAudit.Api_HostAddress}}/api/auth/session
+Authorization: Bearer {{FirebaseIdToken}}
+Accept: application/json
+
+###
+
+GET {{SeoAudit.Api_HostAddress}}/api/auth/me
+Authorization: Bearer {{FirebaseIdToken}}
+Accept: application/json
+
+###
