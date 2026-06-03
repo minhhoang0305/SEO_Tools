@@ -30,6 +30,7 @@ services:
       Firebase__ProjectId: ${FIREBASE_PROJECT_ID}
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-service-account.json
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      Redis__ConnectionString: redis:6379
     ports:
       - "${SEO_AUDIT_CORE_API_PORT:-5001}:8080"
     volumes:
@@ -37,6 +38,35 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
+
+  redis:
+    image: redis:7
+    container_name: seo-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: seo-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    depends_on:
+      redis:
+        condition: service_started
 
 volumes:
   postgres_data:
+  redis_data:

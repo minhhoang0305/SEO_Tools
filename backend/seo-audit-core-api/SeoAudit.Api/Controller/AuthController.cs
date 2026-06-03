@@ -2,12 +2,15 @@ using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeoAudit.Application.Feature.Auth;
+using SeoAudit.Application.Feature.Auth.Interfaces;
 
 namespace SeoAudit.Api.Controller;
 
+public record RefreshRequest(string RefreshToken);
+
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, FirebaseAuth firebaseAuth, IRefreshService refreshService) : ControllerBase
 {
     [Authorize]
     [HttpPost("session")]
@@ -30,12 +33,28 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         var idToken = authorization["Bearer ".Length..].Trim();
 
-        var firebaseToken = await FirebaseAuth.DefaultInstance
+        var firebaseToken = await firebaseAuth
             .VerifyIdTokenAsync(idToken, cancellationToken);
 
         var user = await authService.CreateOrUpdateSessionAsync(firebaseToken, cancellationToken);
 
         return Ok(user);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest req)
+    {
+        var result = await refreshService.RefreshAsync(req.RefreshToken);
+        if (!result.IsSuccess) return Unauthorized(result.Error);
+        return Ok(result.Value);
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromBody] RefreshRequest req)
+    {
+        var result = await refreshService.RevokeAsync(req.RefreshToken);
+        if (!result.IsSuccess) return BadRequest(result.Error);
+        return Ok(new { message = "Logout successful" });
     }
 
     [Authorize]

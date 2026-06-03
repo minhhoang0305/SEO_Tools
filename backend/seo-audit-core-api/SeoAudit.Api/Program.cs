@@ -3,9 +3,13 @@ using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using SeoAudit.Application.Feature.Auth;
+using SeoAudit.Application.Feature.Auth.Interfaces;
+using SeoAudit.Application.Feature.Auth.Service;
+using SeoAudit.Application.Options;
 using SeoAudit.Domain.Interfaces;
 using SeoAudit.Infrastructure.Persistence.Data;
 using SeoAudit.Infrastructure.Repository;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +22,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IRefreshService, RefreshService>();
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+
+var redisConnectionString = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    return ConnectionMultiplexer.Connect(redisConnectionString);
+});
 
 var firebaseProjectId = builder.Configuration["Firebase:ProjectId"];
 
