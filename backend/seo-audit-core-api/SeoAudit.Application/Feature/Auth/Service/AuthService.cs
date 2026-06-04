@@ -1,14 +1,15 @@
 using FirebaseAdmin.Auth;
 using System.Collections;
+using SeoAudit.Application.Feature.Auth;
 using SeoAudit.Application.Feature.Auth.Contracts;
 using SeoAudit.Domain.Entities;
 using SeoAudit.Domain.Interfaces;
 
-namespace SeoAudit.Application.Feature.Auth.Services;
+namespace SeoAudit.Application.Feature.Auth.Service;
 
 public class AuthService(IUserRepository userRepository) : IAuthService
 {
-    public async Task<UserResponse> CreateOrUpdateSessionAsync(
+    public async Task<UserRequest> CreateOrUpdateSessionAsync(
         FirebaseToken firebaseToken,
         CancellationToken cancellationToken = default)
     {
@@ -79,7 +80,7 @@ public class AuthService(IUserRepository userRepository) : IAuthService
                 cancellationToken);
         }
 
-        return ToResponse(user);
+        return ToRequest(user);
     }
 
     public async Task<UserResponse?> GetCurrentUserAsync(
@@ -98,6 +99,19 @@ public class AuthService(IUserRepository userRepository) : IAuthService
     private static UserResponse ToResponse(User user)
     {
         return new UserResponse(
+            user.Id,
+            user.FirebaseUid,
+            user.Email,
+            user.DisplayName,
+            user.PhotoUrl,
+            user.EmailVerified,
+            user.LastLoginAt
+        );
+    }
+
+    private static UserRequest ToRequest(User user)
+    {
+        return new UserRequest(
             user.Id,
             user.FirebaseUid,
             user.Email,

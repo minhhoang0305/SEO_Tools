@@ -116,6 +116,25 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:80"
 
+  seo-audit-worker:
+    build:
+      context: ..
+      dockerfile: seo-audit-worker/Dockerfile
+    container_name: seo-tools-worker
+    restart: unless-stopped
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-seo_tools}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:

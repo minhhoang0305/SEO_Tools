@@ -12,11 +12,13 @@ public class CreateAuditService(
 {
     public async Task<Guid> Handle(
         CreatedAudit request,
+        Guid userId,
         CancellationToken cancellationToken)
     {
         var audit = new AuditJob
         {
             Id = Guid.NewGuid(),
+            UserId = userId,
             Url = request.Url,
             Keyword = request.Keyword,
             Language = request.Language,

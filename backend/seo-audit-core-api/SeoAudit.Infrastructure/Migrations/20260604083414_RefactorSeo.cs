@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,6 +11,25 @@ namespace SeoAudit.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "audit_jobs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Url = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    Keyword = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Language = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Country = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_audit_jobs", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "seo_issues",
                 columns: table => new
@@ -44,6 +63,16 @@ namespace SeoAudit.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_audit_jobs_Status",
+                table: "audit_jobs",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_audit_jobs_UserId",
+                table: "audit_jobs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_seo_issues_ReportId",
                 table: "seo_issues",
                 column: "ReportId");
@@ -68,6 +97,9 @@ namespace SeoAudit.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "seo_reports");
+
+            migrationBuilder.DropTable(
+                name: "audit_jobs");
         }
     }
 }
