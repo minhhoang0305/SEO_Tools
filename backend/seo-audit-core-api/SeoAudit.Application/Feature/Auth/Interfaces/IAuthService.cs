@@ -1,4 +1,5 @@
 using FirebaseAdmin.Auth;
+using SeoAudit.Application.Feature.Auth.Contracts;
 
 namespace SeoAudit.Application.Feature.Auth;
 
@@ -8,7 +9,7 @@ public interface IAuthService
         FirebaseToken firebaseToken,
         CancellationToken cancellationToken = default);
 
-    Task<UserRequest?> GetCurrentUserAsync(
+    Task<UserResponse?> GetCurrentUserAsync(
         string firebaseUid,
         CancellationToken cancellationToken = default);
 }

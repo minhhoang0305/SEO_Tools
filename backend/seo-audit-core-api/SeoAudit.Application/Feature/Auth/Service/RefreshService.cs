@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using SeoAudit.Domain.Entities;
 using SeoAudit.Domain.Models;
 using Microsoft.IdentityModel.Tokens;
-using SeoAudit.Domain.Common;
+using SeoAudit.Shared;
 using SeoAudit.Application.Feature.Auth.Interfaces;
 using SeoAudit.Application.Options;
 namespace SeoAudit.Application.Feature.Auth.Service;

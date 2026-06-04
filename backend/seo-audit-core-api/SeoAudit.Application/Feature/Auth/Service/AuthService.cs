@@ -1,12 +1,14 @@
 using FirebaseAdmin.Auth;
+using System.Collections;
+using SeoAudit.Application.Feature.Auth.Contracts;
 using SeoAudit.Domain.Entities;
 using SeoAudit.Domain.Interfaces;
 
-namespace SeoAudit.Application.Feature.Auth;
+namespace SeoAudit.Application.Feature.Auth.Services;
 
 public class AuthService(IUserRepository userRepository) : IAuthService
 {
-    public async Task<UserRequest> CreateOrUpdateSessionAsync(
+    public async Task<UserResponse> CreateOrUpdateSessionAsync(
         FirebaseToken firebaseToken,
         CancellationToken cancellationToken = default)
     {
@@ -19,7 +21,8 @@ public class AuthService(IUserRepository userRepository) : IAuthService
 
         if (string.IsNullOrWhiteSpace(email))
         {
-            throw new InvalidOperationException("Firebase token does not contain an email.");
+            throw new InvalidOperationException(
+                "Firebase token does not contain an email.");
         }
 
         var displayName = firebaseToken.Claims.TryGetValue("name", out var nameClaim)
@@ -30,15 +33,16 @@ public class AuthService(IUserRepository userRepository) : IAuthService
             ? pictureClaim?.ToString()
             : null;
 
-        var emailVerified = firebaseToken.Claims.TryGetValue("email_verified", out var verifiedClaim)
+        var emailVerified =
+            firebaseToken.Claims.TryGetValue("email_verified", out var verifiedClaim)
             && verifiedClaim is bool verified
             && verified;
 
-        var provider = firebaseToken.Claims.TryGetValue("firebase", out var firebaseClaim)
-            ? firebaseClaim?.ToString()
-            : null;
+        var provider = ExtractProvider(firebaseToken);
 
-        var user = await userRepository.GetByFirebaseUidAsync(firebaseUid, cancellationToken);
+        var user = await userRepository.GetByFirebaseUidAsync(
+            firebaseUid,
+            cancellationToken);
 
         if (user is null)
         {
@@ -56,7 +60,9 @@ public class AuthService(IUserRepository userRepository) : IAuthService
                 UpdatedAt = now
             };
 
-            user = await userRepository.CreateAsync(user, cancellationToken);
+            user = await userRepository.CreateAsync(
+                user,
+                cancellationToken);
         }
         else
         {
@@ -68,23 +74,30 @@ public class AuthService(IUserRepository userRepository) : IAuthService
             user.LastLoginAt = now;
             user.UpdatedAt = now;
 
-            user = await userRepository.UpdateAsync(user, cancellationToken);
+            user = await userRepository.UpdateAsync(
+                user,
+                cancellationToken);
         }
 
-        return ToDto(user);
+        return ToResponse(user);
     }
 
-    public async Task<UserRequest?> GetCurrentUserAsync(
+    public async Task<UserResponse?> GetCurrentUserAsync(
         string firebaseUid,
         CancellationToken cancellationToken = default)
     {
-        var user = await userRepository.GetByFirebaseUidAsync(firebaseUid, cancellationToken);
-        return user is null ? null : ToDto(user);
+        var user = await userRepository.GetByFirebaseUidAsync(
+            firebaseUid,
+            cancellationToken);
+
+        return user is null
+            ? null
+            : ToResponse(user);
     }
 
-    private static UserRequest ToDto(User user)
+    private static UserResponse ToResponse(User user)
     {
-        return new UserRequest(
+        return new UserResponse(
             user.Id,
             user.FirebaseUid,
             user.Email,
@@ -93,5 +106,35 @@ public class AuthService(IUserRepository userRepository) : IAuthService
             user.EmailVerified,
             user.LastLoginAt
         );
+    }
+
+    private static string? ExtractProvider(FirebaseToken firebaseToken)
+    {
+        if (!firebaseToken.Claims.TryGetValue("firebase", out var firebaseClaim))
+        {
+            return null;
+        }
+
+        if (firebaseClaim is IReadOnlyDictionary<string, object> readOnlyDictionary &&
+            readOnlyDictionary.TryGetValue("sign_in_provider", out var readOnlyProvider))
+        {
+            return readOnlyProvider?.ToString();
+        }
+
+        if (firebaseClaim is IDictionary<string, object> genericDictionary &&
+            genericDictionary.TryGetValue("sign_in_provider", out var genericProvider))
+        {
+            return genericProvider?.ToString();
+        }
+
+        if (firebaseClaim is IDictionary firebaseDictionary &&
+            firebaseDictionary.Contains("sign_in_provider"))
+        {
+            return firebaseDictionary["sign_in_provider"]?.ToString();
+        }
+
+        return firebaseClaim?.ToString() is { Length: <= 100 } provider
+            ? provider
+            : null;
     }
 }

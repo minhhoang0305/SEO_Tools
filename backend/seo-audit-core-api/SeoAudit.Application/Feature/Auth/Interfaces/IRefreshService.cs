@@ -1,6 +1,6 @@
 using SeoAudit.Domain.Entities;
 using SeoAudit.Domain.Models;
-using SeoAudit.Domain.Common;
+using SeoAudit.Shared;
 namespace SeoAudit.Application.Feature.Auth.Interfaces;
 public interface IRefreshService
 {

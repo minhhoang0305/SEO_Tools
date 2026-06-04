@@ -3,4 +3,5 @@
   <Project Path="SeoAudit.Application/SeoAudit.Application.csproj" />
   <Project Path="SeoAudit.Domain/SeoAudit.Domain.csproj" />
   <Project Path="SeoAudit.Infrastructure/SeoAudit.Infrastructure.csproj" />
+  <Project Path="SeoAudit.Shared/SeoAudit.Shared.csproj" />
 </Solution>

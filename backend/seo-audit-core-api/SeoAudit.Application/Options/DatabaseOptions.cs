@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace SeoAudit.Api.Options;
+namespace SeoAudit.Application.Options;
 
 public class DatabaseOptions
 {

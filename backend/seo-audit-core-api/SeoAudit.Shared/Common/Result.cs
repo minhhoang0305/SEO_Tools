@@ -1,4 +1,4 @@
-namespace SeoAudit.Domain.Common;
+namespace SeoAudit.Shared;
 
 public sealed class Result<T>
 {

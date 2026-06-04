@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
   </ItemGroup>
@@ -20,6 +21,7 @@
     <ProjectReference Include="..\SeoAudit.Application\SeoAudit.Application.csproj" />
     <ProjectReference Include="..\SeoAudit.Infrastructure\SeoAudit.Infrastructure.csproj" />
     <ProjectReference Include="..\SeoAudit.Domain\SeoAudit.Domain.csproj" />
+    <ProjectReference Include="..\SeoAudit.Shared\SeoAudit.Shared.csproj" />
   </ItemGroup>
 
 </Project>

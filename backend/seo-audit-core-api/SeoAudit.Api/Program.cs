@@ -1,15 +1,24 @@
 using FirebaseAdmin;
+using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
 using SeoAudit.Application.Feature.Auth;
 using SeoAudit.Application.Feature.Auth.Interfaces;
 using SeoAudit.Application.Feature.Auth.Service;
+using SeoAudit.Application.Features;
+using SeoAudit.Application.Interfaces;
 using SeoAudit.Application.Options;
 using SeoAudit.Domain.Interfaces;
+using SeoAudit.Infrastructure.Messaging;
 using SeoAudit.Infrastructure.Persistence.Data;
+using SeoAudit.Infrastructure.Repositories;
 using SeoAudit.Infrastructure.Repository;
 using StackExchange.Redis;
+using System.Threading.RateLimiting;
+using System.Diagnostics;
+using SeoAudit.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +33,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRefreshService, RefreshService>();
+builder.Services.AddScoped<CreateAuditService>();
+builder.Services.AddScoped<IAuditRepository, AuditRepository>();
+builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
@@ -33,6 +45,14 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(redisConnectionString);
 });
 
+builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
+{
+    HostName = builder.Configuration["RabbitMq:HostName"] ?? "localhost",
+    Port = builder.Configuration.GetValue("RabbitMq:Port", 5672),
+    UserName = builder.Configuration["RabbitMq:UserName"] ?? "guest",
+    Password = builder.Configuration["RabbitMq:Password"] ?? "guest"
+});
+
 var firebaseProjectId = builder.Configuration["Firebase:ProjectId"];
 
 if (string.IsNullOrWhiteSpace(firebaseProjectId))
@@ -40,14 +60,18 @@ if (string.IsNullOrWhiteSpace(firebaseProjectId))
     throw new InvalidOperationException("Firebase:ProjectId is required.");
 }
 
-if (FirebaseApp.DefaultInstance is null)
+var firebaseApp = FirebaseApp.DefaultInstance;
+
+if (firebaseApp is null)
 {
-    FirebaseApp.Create(new AppOptions
+    firebaseApp = FirebaseApp.Create(new AppOptions
     {
         ProjectId = firebaseProjectId,
         Credential = GoogleCredential.GetApplicationDefault()
     });
 }
+
+builder.Services.AddSingleton(FirebaseAuth.GetAuth(firebaseApp));
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -71,8 +95,42 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(), 
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+    
+    options.OnRejected = (context, cancellationToken) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = retryAfter.TotalSeconds.ToString();
+        }
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.");
+
+        return new ValueTask();
+    };
+});
+
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
+
 var app = builder.Build();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.ConfigureExceptionHandler();
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -80,12 +138,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 app.UseHttpsRedirection();
 
 app.UseCors();
 
+app.UseMiddleware<TraceIdMiddleware>();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 

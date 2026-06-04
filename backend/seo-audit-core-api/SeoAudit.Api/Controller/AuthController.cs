@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeoAudit.Application.Feature.Auth;
 using SeoAudit.Application.Feature.Auth.Interfaces;
+using SeoAudit.Domain.Entities;
 
 namespace SeoAudit.Api.Controller;
 
-public record RefreshRequest(string RefreshToken);
+
 
 [ApiController]
 [Route("api/auth")]
@@ -14,7 +15,7 @@ public class AuthController(IAuthService authService, FirebaseAuth firebaseAuth,
 {
     [Authorize]
     [HttpPost("session")]
-    public async Task<ActionResult<UserRequest>> CreateSession(CancellationToken cancellationToken)
+    public async Task<ActionResult<AuthSessionResponse>> CreateSession(CancellationToken cancellationToken)
     {
         var firebaseUid = User.FindFirst("user_id")?.Value
             ?? User.FindFirst("sub")?.Value;
@@ -37,8 +38,18 @@ public class AuthController(IAuthService authService, FirebaseAuth firebaseAuth,
             .VerifyIdTokenAsync(idToken, cancellationToken);
 
         var user = await authService.CreateOrUpdateSessionAsync(firebaseToken, cancellationToken);
+        var token = await refreshService.GenerateTokenAsync(new User
+        {
+            Id = user.Id,
+            FirebaseUid = user.FirebaseUid,
+            Email = user.Email,
+            DisplayName = user.DisplayName,
+            PhotoUrl = user.PhotoUrl,
+            EmailVerified = user.EmailVerified,
+            LastLoginAt = user.LastLoginAt
+        });
 
-        return Ok(user);
+        return Ok(new AuthSessionResponse(user, token));
     }
 
     [HttpPost("refresh")]
@@ -54,7 +65,7 @@ public class AuthController(IAuthService authService, FirebaseAuth firebaseAuth,
     {
         var result = await refreshService.RevokeAsync(req.RefreshToken);
         if (!result.IsSuccess) return BadRequest(result.Error);
-        return Ok(new { message = "Logout successful" });
+        return Ok(new { message = "Đăng xuất thành công" });
     }
 
     [Authorize]

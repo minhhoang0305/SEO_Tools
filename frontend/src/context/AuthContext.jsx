@@ -10,6 +10,8 @@ import {
 import { auth, googleProvider } from '../firebase';
 
 const AuthContext = createContext();
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';
+const AUTH_SESSION_KEY = 'authSession';
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -17,7 +19,31 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [session, setSession] = useState(() => {
+    const storedSession = localStorage.getItem(AUTH_SESSION_KEY);
+    return storedSession ? JSON.parse(storedSession) : null;
+  });
   const [loading, setLoading] = useState(true);
+
+  async function createBackendSession(firebaseUser) {
+    const idToken = await firebaseUser.getIdToken();
+    const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${idToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Không thể tạo phiên đăng nhập trên server.');
+    }
+
+    const nextSession = await response.json();
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(nextSession));
+    setSession(nextSession);
+
+    return nextSession;
+  }
 
   // Đăng ký tài khoản mới bằng Email/Mật khẩu và cập nhật Display Name
   async function signup(email, password, displayName) {
@@ -26,23 +52,39 @@ export function AuthProvider({ children }) {
     await updateProfile(userCredential.user, {
       displayName: displayName
     });
-    // Trả về user cập nhật mới nhất
-    return userCredential.user;
+    await userCredential.user.reload();
+    return createBackendSession(auth.currentUser ?? userCredential.user);
   }
 
   // Đăng nhập bằng Email/Mật khẩu
-  function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
+  async function login(email, password) {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return createBackendSession(userCredential.user);
   }
 
   // Đăng xuất
-  function logout() {
+  async function logout() {
+    const refreshToken = session?.token?.refreshToken;
+
+    if (refreshToken) {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ refreshToken })
+      }).catch(() => {});
+    }
+
+    localStorage.removeItem(AUTH_SESSION_KEY);
+    setSession(null);
     return signOut(auth);
   }
 
   // Đăng nhập bằng Google
-  function loginWithGoogle() {
-    return signInWithPopup(auth, googleProvider);
+  async function loginWithGoogle() {
+    const userCredential = await signInWithPopup(auth, googleProvider);
+    return createBackendSession(userCredential.user);
   }
 
   // Theo dõi sự thay đổi trạng thái Authentication của Firebase
@@ -57,6 +99,9 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    session,
+    accessToken: session?.token?.accessToken ?? null,
+    refreshToken: session?.token?.refreshToken ?? null,
     signup,
     login,
     logout,
