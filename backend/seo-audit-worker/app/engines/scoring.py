@@ -1,57 +1,61 @@
-def calculate(analysis):
+def calculate(technical_result):
 
     score = 0
 
     issues = []
 
-    if analysis["https"]:
+    robots = technical_result["robots"]
+    sitemap = technical_result["sitemap"]
+    redirect = technical_result["redirect"]
+    opengraph = technical_result["opengraph"]
+    twitter = technical_result["twitter"]
+
+    if robots["exists"]:
         score += 20
     else:
         issues.append({
             "severity": "High",
-            "title": "HTTPS Missing",
-            "description": "The website does not use the secure HTTPS protocol.",
-            "recommendation": "Use HTTPS"
+            "title": "Missing robots.txt"
         })
 
-    if analysis["title"]:
+    if sitemap["exists"]:
         score += 20
     else:
         issues.append({
             "severity": "High",
-            "title": "Missing Title",
-            "description": "The website does not have a <title> tag in the head section.",
-            "recommendation": "Add title tag"
+            "title": "Missing sitemap.xml"
         })
 
-    if analysis["meta_description"]:
+    if redirect["redirect_count"] <= 2:
         score += 20
     else:
         issues.append({
             "severity": "Medium",
-            "title": "Missing Meta Description",
-            "description": "The website does not have a <meta name=\"description\"> tag in the head section.",
-            "recommendation": "Add meta description"
+            "title": "Redirect chain too long"
         })
 
-    if analysis["canonical"]:
+    if (
+        opengraph["has_og_title"]
+        and
+        opengraph["has_og_description"]
+        and
+        opengraph["has_og_image"]
+    ):
         score += 20
+
     else:
+
         issues.append({
             "severity": "Medium",
-            "title": "Missing Canonical",
-            "description": "The website does not have a <link rel=\"canonical\"> tag in the head section.",
-            "recommendation": "Add canonical tag"
+            "title": "Incomplete Open Graph"
         })
 
-    if analysis["robots"]:
+    if twitter["has_twitter_card"]:
         score += 20
     else:
         issues.append({
             "severity": "Low",
-            "title": "Missing Robots Meta",
-            "description": "The website does not have a <meta name=\"robots\"> tag in the head section.",
-            "recommendation": "Add robots meta"
+            "title": "Missing Twitter Card"
         })
 
     return {

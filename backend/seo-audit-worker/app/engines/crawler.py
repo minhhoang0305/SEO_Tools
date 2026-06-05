@@ -1,16 +1,12 @@
-import httpx
+from app.engines.crawles.crawl_factory import (
+    CrawlerFactory
+)
 
-async def crawl(url: str):
 
-    async with httpx.AsyncClient(
-        timeout=30,
-        follow_redirects=True
-    ) as client:
+async def crawl(
+    url: str
+):
 
-        response = await client.get(url)
-
-        return {
-            "status_code": response.status_code,
-            "final_url": str(response.url),
-            "html": response.text
-        }
+    return await CrawlerFactory.crawl(
+        url
+    )

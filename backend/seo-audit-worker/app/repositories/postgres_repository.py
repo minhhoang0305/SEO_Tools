@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 import asyncpg
 import uuid
 
@@ -20,37 +21,56 @@ class PostgresRepository:
     ):
         conn = await self.get_connection()
         report_id = uuid.uuid4()
+        audit_uuid = uuid.UUID(audit_id) if isinstance(audit_id, str) else audit_id
 
-        await conn.execute(
-            """
-            INSERT INTO seo_reports
-            (
-                "Id",
-                "AuditJobId",
-                "SeoScore",
-                "TechnicalScore",
-                "OnPageScore",
-                "CreatedAt"
+        async with conn.transaction():
+            await conn.execute(
+                """
+                DELETE FROM seo_issues
+                WHERE "ReportId" IN (
+                    SELECT "Id" FROM seo_reports WHERE "AuditJobId" = $1
+                )
+                """,
+                audit_uuid
             )
-            VALUES
-            (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                NOW()
+            await conn.execute(
+                """
+                DELETE FROM seo_reports
+                WHERE "AuditJobId" = $1
+                """,
+                audit_uuid
             )
-            """,
-            report_id,
-            uuid.UUID(audit_id) if isinstance(audit_id, str) else audit_id,
-            score,
-            score,
-            0
-        )
+            await conn.execute(
+                """
+                INSERT INTO seo_reports
+                (
+                    "Id",
+                    "AuditJobId",
+                    "SeoScore",
+                    "TechnicalScore",
+                    "OnPageScore",
+                    "CreatedAt"
+                )
+                VALUES
+                (
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5,
+                    NOW()
+                )
+                """,
+                report_id,
+                audit_uuid,
+                score,
+                score,
+                0
+            )
 
         await conn.close()
         return report_id
+
 
     async def save_issue(
         self,
@@ -85,8 +105,8 @@ class PostgresRepository:
             uuid.UUID(report_id) if isinstance(report_id, str) else report_id,
             issue["severity"],
             issue["title"],
-            issue["description"],
-            issue["recommendation"]
+            issue.get("description", ""),
+            issue.get("recommendation", "")
         )
 
         await conn.close()
@@ -102,6 +122,25 @@ class PostgresRepository:
             """
             UPDATE audit_jobs
             SET "Status" = 'Completed',
+                "CompletedAt" = NOW()
+            WHERE "Id" = $1
+            """,
+            uuid.UUID(audit_id) if isinstance(audit_id, str) else audit_id
+        )
+
+        await conn.close()
+
+    async def mark_failed(
+        self,
+        audit_id
+    ):
+
+        conn = await self.get_connection()
+
+        await conn.execute(
+            """
+            UPDATE audit_jobs
+            SET "Status" = 'Failed',
                 "CompletedAt" = NOW()
             WHERE "Id" = $1
             """,

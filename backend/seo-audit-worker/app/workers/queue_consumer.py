@@ -10,7 +10,7 @@ from app.core.config import (
 )
 
 from app.engines.crawler import crawl
-from app.engines.technical_seo import analyze
+from app.engines.technical_seo import analyze_technical_seo
 from app.engines.scoring import calculate
 from app.repositories.postgres_repository import PostgresRepository
 
@@ -29,9 +29,8 @@ async def process_audit(message):
         f"HTML Length: {len(crawl_result['html'])}"
     )
 
-    seo_result = analyze(
-        crawl_result["html"],
-        crawl_result["final_url"]
+    seo_result = await analyze_technical_seo(
+        crawl_result
     )
 
     print("\nSEO Analysis")
@@ -60,20 +59,40 @@ def callback(
     properties,
     body
 ):
+    message = None
+    try:
+        message = json.loads(
+            body.decode()
+        )
 
-    message = json.loads(
-        body.decode()
-    )
+        print(
+            f"Received Audit: {message}"
+        )
 
-    print(
-        f"Received Audit: {message}"
-    )
+        asyncio.run(process_audit(message))
 
-    asyncio.run(process_audit(message))
+        ch.basic_ack(
+            delivery_tag=method.delivery_tag
+        )
+    except Exception as e:
+        print(f"Error processing audit message: {e}")
 
-    ch.basic_ack(
-        delivery_tag=method.delivery_tag
-    )
+        if message and "AuditId" in message:
+            audit_id = message["AuditId"]
+            try:
+                db_repo = PostgresRepository(DATABASE_URL)
+                asyncio.run(db_repo.mark_failed(audit_id))
+                print(f"Successfully marked audit job {audit_id} as Failed in DB")
+            except Exception as db_err:
+                print(f"Failed to mark audit job {audit_id} as Failed in DB: {db_err}")
+
+        try:
+            ch.basic_ack(
+                delivery_tag=method.delivery_tag
+            )
+        except Exception as ack_err:
+            print(f"Failed to ack message after error: {ack_err}")
+
 
 def start_consumer():
 
@@ -86,9 +105,9 @@ def start_consumer():
     channel = connection.channel()
 
     channel.exchange_declare(
-    exchange="audit.exchange",
-    exchange_type="topic",
-    durable=True
+        exchange="audit.exchange",
+        exchange_type="topic",
+        durable=True
     )
 
     channel.queue_declare(
@@ -102,13 +121,9 @@ def start_consumer():
         routing_key="audit.created"
     )
 
-    channel.basic_qos(
-    prefetch_count=1
-    )
-
     channel.basic_consume(
-    queue="audit.queue",
-    on_message_callback=callback
+        queue="audit.queue",
+        on_message_callback=callback
     )
 
     print(
