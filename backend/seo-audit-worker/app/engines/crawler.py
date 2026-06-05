@@ -4,9 +4,13 @@ from app.engines.crawles.crawl_factory import (
 
 
 async def crawl(
-    url: str
+    url: str,
+    language: str = None,
+    country: str = None
 ):
 
     return await CrawlerFactory.crawl(
-        url
+        url,
+        language=language,
+        country=country
     )

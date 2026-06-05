@@ -13,13 +13,17 @@ class CrawlerFactory:
 
     @staticmethod
     async def crawl(
-        url: str
+        url: str,
+        language: str = None,
+        country: str = None
     ):
 
         http_crawler = HttpCrawler()
 
         result = await http_crawler.crawl(
-            url
+            url,
+            language=language,
+            country=country
         )
 
         soup = BeautifulSoup(
@@ -53,5 +57,7 @@ class CrawlerFactory:
         )
 
         return await playwright_crawler.crawl(
-            url
+            url,
+            language=language,
+            country=country
         )

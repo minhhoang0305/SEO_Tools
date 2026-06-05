@@ -507,35 +507,79 @@ export default function Dashboard() {
                         </div>
                       ) : (
                         <div className="issues-container">
-                          {auditDetails.report.issues.map((issue) => (
-                            <div key={issue.id} className="issue-card">
-                              <div className="issue-header">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  {issue.severity?.toLowerCase() === 'critical' ? (
-                                    <AlertCircle size={18} style={{ color: '#ef4444' }} />
-                                  ) : issue.severity?.toLowerCase() === 'warning' ? (
-                                    <AlertTriangle size={18} style={{ color: '#f59e0b' }} />
-                                  ) : (
-                                    <Info size={18} style={{ color: '#3b82f6' }} />
-                                  )}
-                                  <span className="issue-title">{issue.title}</span>
+                          {auditDetails.report.issues.map((issue) => {
+                            const severityLower = issue.severity?.toLowerCase() || 'info';
+                            const isHigh = severityLower === 'high' || severityLower === 'critical';
+                            const isMedium = severityLower === 'medium' || severityLower === 'warning';
+                            
+                            const severityClass = isHigh ? 'critical' : isMedium ? 'warning' : 'info';
+                            const severityLabel = isHigh ? 'Nghiêm trọng' : isMedium ? 'Cảnh báo' : 'Thông tin';
+
+                            // Fallback descriptions and recommendations in case they are missing from DB
+                            let description = issue.description;
+                            let recommendation = issue.recommendation;
+
+                            if (!description || !recommendation) {
+                              const titleLower = issue.title?.toLowerCase() || '';
+                              if (titleLower.includes('robots.txt')) {
+                                description = description || 'Tệp robots.txt không tồn tại trên website.';
+                                recommendation = recommendation || 'Tạo tệp robots.txt ở thư mục gốc của website để hướng dẫn các bot tìm kiếm.';
+                              } else if (titleLower.includes('sitemap.xml')) {
+                                description = description || 'Sơ đồ trang web sitemap.xml không được tìm thấy.';
+                                recommendation = recommendation || 'Tạo tệp sitemap.xml chứa danh sách URL của trang web và khai báo trong robots.txt hoặc Google Search Console.';
+                              } else if (titleLower.includes('redirect chain') || titleLower.includes('redirect')) {
+                                description = description || 'Có quá nhiều bước chuyển hướng (redirect) trước khi tải được trang.';
+                                recommendation = recommendation || 'Giảm số lượng chuyển hướng trung gian để cải thiện tốc độ tải trang và SEO.';
+                              } else if (titleLower.includes('open graph') || titleLower.includes('og:')) {
+                                description = description || 'Thiếu các thẻ Open Graph (og:title, og:description, hoặc og:image) dùng để hiển thị khi chia sẻ trên mạng xã hội.';
+                                recommendation = recommendation || 'Thêm đầy đủ các thẻ meta Open Graph vào phần <head>.';
+                              } else if (titleLower.includes('twitter')) {
+                                description = description || 'Thiếu thẻ meta Twitter Card cho mạng xã hội Twitter.';
+                                recommendation = recommendation || 'Thêm thẻ <meta name="twitter:card" content="summary_large_image"> vào phần <head>.';
+                              } else if (titleLower.includes('title tag') || titleLower.includes('missing title') || titleLower.includes('title is')) {
+                                description = description || 'Thẻ tiêu đề <title> bị thiếu hoặc chưa tối ưu trong phần head.';
+                                recommendation = recommendation || 'Thêm hoặc cập nhật thẻ <title> chứa từ khóa mục tiêu với độ dài từ 30 đến 65 ký tự.';
+                              } else if (titleLower.includes('meta description')) {
+                                description = description || 'Thẻ mô tả (meta description) bị thiếu hoặc chưa tối ưu.';
+                                recommendation = recommendation || 'Thêm hoặc cập nhật thẻ <meta name="description" content="..."> với độ dài từ 120 đến 160 ký tự.';
+                              } else if (titleLower.includes('h1')) {
+                                description = description || 'Thẻ tiêu đề chính H1 bị thiếu hoặc có nhiều hơn một thẻ.';
+                                recommendation = recommendation || 'Sử dụng duy nhất một thẻ H1 chứa từ khóa chính cho mỗi trang.';
+                              } else if (titleLower.includes('image') || titleLower.includes('alt')) {
+                                description = description || 'Một số hình ảnh trên trang thiếu thuộc tính alt (văn bản thay thế).';
+                                recommendation = recommendation || 'Bổ sung thuộc tính alt vào tất cả các thẻ <img> để tối ưu hóa SEO hình ảnh.';
+                              }
+                            }
+
+                            return (
+                              <div key={issue.id} className="issue-card">
+                                <div className="issue-header">
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    {isHigh ? (
+                                      <AlertCircle size={18} style={{ color: '#ef4444' }} />
+                                    ) : isMedium ? (
+                                      <AlertTriangle size={18} style={{ color: '#f59e0b' }} />
+                                    ) : (
+                                      <Info size={18} style={{ color: '#3b82f6' }} />
+                                    )}
+                                    <span className="issue-title">{issue.title}</span>
+                                  </div>
+                                  <span className={`severity-pill ${severityClass}`}>
+                                    {severityLabel}
+                                  </span>
                                 </div>
-                                <span className={`severity-pill ${issue.severity?.toLowerCase()}`}>
-                                  {issue.severity === 'critical' ? 'Nghiêm trọng' :
-                                   issue.severity === 'warning' ? 'Cảnh báo' : 'Thông tin'}
-                                </span>
+
+                                {description && <p className="issue-description">{description}</p>}
+
+                                {recommendation && (
+                                  <div className="recommendation-box">
+                                    <div className="recommendation-title">Khuyến nghị khắc phục:</div>
+                                    <div className="recommendation-text">{recommendation}</div>
+                                  </div>
+                                )}
                               </div>
-
-                              <p className="issue-description">{issue.description}</p>
-
-                              {issue.recommendation && (
-                                <div className="recommendation-box">
-                                  <div className="recommendation-title">Khuyến nghị khắc phục:</div>
-                                  <div className="recommendation-text">{issue.recommendation}</div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>

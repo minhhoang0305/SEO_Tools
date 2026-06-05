@@ -17,7 +17,9 @@ class PostgresRepository:
     async def save_report(
         self,
         audit_id,
-        score
+        seo_score,
+        technical_score,
+        on_page_score
     ):
         conn = await self.get_connection()
         report_id = uuid.uuid4()
@@ -63,9 +65,9 @@ class PostgresRepository:
                 """,
                 report_id,
                 audit_uuid,
-                score,
-                score,
-                0
+                seo_score,
+                technical_score,
+                on_page_score
             )
 
         await conn.close()

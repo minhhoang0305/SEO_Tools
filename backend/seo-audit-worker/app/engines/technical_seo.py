@@ -19,7 +19,7 @@ from app.engines.analyzers.title import analyze_title
 from app.engines.analyzers.twitter import analyze_twitter
 
 
-async def analyze_technical_seo(crawl_result):
+async def analyze_technical_seo(crawl_result, target_language: str = None):
     html_content = crawl_result["html"]
     url = crawl_result["final_url"]
 
@@ -47,7 +47,7 @@ async def analyze_technical_seo(crawl_result):
     external_links = analyze_external_links(html_content, url)
 
     response_headers = crawl_result.get("headers", {})
-    language = analyze_language(html_content, response_headers=response_headers)
+    language = analyze_language(html_content, response_headers=response_headers, target_language=target_language)
 
     return {
         "metadata": metadata,

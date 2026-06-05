@@ -18,8 +18,11 @@ from app.repositories.postgres_repository import PostgresRepository
 async def process_audit(message):
     url = message["Url"]
     audit_id = message["AuditId"]
+    keyword = message.get("Keyword", "")
+    language = message.get("Language", "")
+    country = message.get("Country", "")
 
-    crawl_result = await crawl(url)
+    crawl_result = await crawl(url, language=language, country=country)
 
     print(
         f"Status: {crawl_result['status_code']}"
@@ -30,21 +33,29 @@ async def process_audit(message):
     )
 
     seo_result = await analyze_technical_seo(
-        crawl_result
+        crawl_result,
+        target_language=language
     )
 
     print("\nSEO Analysis")
     print(seo_result)
 
     score_result = calculate(
-        seo_result
+        seo_result,
+        keyword=keyword,
+        target_language=language
     )
 
     print("\nSEO Score")
     print(score_result)
 
     db_repo = PostgresRepository(DATABASE_URL)
-    report_id = await db_repo.save_report(audit_id, score_result["score"])
+    report_id = await db_repo.save_report(
+        audit_id,
+        score_result["score"],
+        score_result["technical_score"],
+        score_result["on_page_score"]
+    )
 
     for issue in score_result["issues"]:
         await db_repo.save_issue(report_id, issue)
