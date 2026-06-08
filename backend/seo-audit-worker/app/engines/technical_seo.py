@@ -17,6 +17,7 @@ from app.engines.analyzers.schema import analyze_schema
 from app.engines.analyzers.sitemap import analyze_sitemap
 from app.engines.analyzers.title import analyze_title
 from app.engines.analyzers.twitter import analyze_twitter
+from app.engines.analyzers.web_vitals import analyze_web_vitals
 
 
 async def analyze_technical_seo(crawl_result, target_language: str = None):
@@ -45,6 +46,7 @@ async def analyze_technical_seo(crawl_result, target_language: str = None):
     images = analyze_images(html_content)
     internal_links = analyze_internal_links(html_content, url)
     external_links = analyze_external_links(html_content, url)
+    web_vitals = await analyze_web_vitals(url)
 
     response_headers = crawl_result.get("headers", {})
     language = analyze_language(html_content, response_headers=response_headers, target_language=target_language)
@@ -64,4 +66,5 @@ async def analyze_technical_seo(crawl_result, target_language: str = None):
         "internal_links": internal_links,
         "external_links": external_links,
         "languages": language,
+        "web_vitals": web_vitals   
     }

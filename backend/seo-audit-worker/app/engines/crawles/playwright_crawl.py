@@ -53,11 +53,14 @@ class PlaywrightCrawler:
             context = await browser.new_context(**context_args)
             page = await context.new_page()
 
-            await page.goto(
+            response = await page.goto(
                 url,
                 wait_until="networkidle",
                 timeout=60000
             )
+
+            status_code = response.status if response else 200
+            headers = await response.all_headers() if response else {}
 
             html = await page.content()
 
@@ -66,14 +69,9 @@ class PlaywrightCrawler:
             await browser.close()
 
             return {
-                "status_code": 200,
-
-                "final_url":
-                    final_url,
-
-                "html":
-                    html,
-
-                "crawl_method":
-                    "playwright"
+                "status_code": status_code,
+                "final_url": final_url,
+                "headers": headers,
+                "html": html,
+                "crawl_method": "playwright"
             }

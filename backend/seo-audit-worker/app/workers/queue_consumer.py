@@ -1,7 +1,7 @@
 import json
 import asyncio
 
-import pika
+import aio_pika
 
 from app.core.config import (
     RABBITMQ_HOST,
@@ -49,96 +49,66 @@ async def process_audit(message):
     print("\nSEO Score")
     print(score_result)
 
-    db_repo = PostgresRepository(DATABASE_URL)
-    report_id = await db_repo.save_report(
-        audit_id,
-        score_result["score"],
-        score_result["technical_score"],
-        score_result["on_page_score"]
-    )
+    async with PostgresRepository(DATABASE_URL) as db_repo:
+        report_id = await db_repo.save_report(
+            audit_id,
+            score_result["score"],
+            score_result["technical_score"],
+            score_result["on_page_score"]
+        )
 
-    for issue in score_result["issues"]:
-        await db_repo.save_issue(report_id, issue)
+        await db_repo.save_issues(report_id, score_result["issues"])
 
-    await db_repo.mark_completed(audit_id)
+        await db_repo.mark_completed(audit_id)
     print(f"Successfully processed and saved audit for job {audit_id}")
 
 
-def callback(
-    ch,
-    method,
-    properties,
-    body
-):
-    message = None
-    try:
-        message = json.loads(
-            body.decode()
+async def run_consumer():
+    connection = await aio_pika.connect_robust(
+        host=RABBITMQ_HOST
+    )
+
+    async with connection:
+        channel = await connection.channel()
+
+        await channel.declare_exchange(
+            "audit.exchange",
+            type=aio_pika.ExchangeType.TOPIC,
+            durable=True
         )
 
-        print(
-            f"Received Audit: {message}"
+        queue = await channel.declare_queue(
+            RABBITMQ_QUEUE,
+            durable=True
         )
 
-        asyncio.run(process_audit(message))
-
-        ch.basic_ack(
-            delivery_tag=method.delivery_tag
+        await queue.bind(
+            exchange="audit.exchange",
+            routing_key="audit.created"
         )
-    except Exception as e:
-        print(f"Error processing audit message: {e}")
 
-        if message and "AuditId" in message:
-            audit_id = message["AuditId"]
-            try:
-                db_repo = PostgresRepository(DATABASE_URL)
-                asyncio.run(db_repo.mark_failed(audit_id))
-                print(f"Successfully marked audit job {audit_id} as Failed in DB")
-            except Exception as db_err:
-                print(f"Failed to mark audit job {audit_id} as Failed in DB: {db_err}")
+        print("Waiting for messages...")
 
-        try:
-            ch.basic_ack(
-                delivery_tag=method.delivery_tag
-            )
-        except Exception as ack_err:
-            print(f"Failed to ack message after error: {ack_err}")
+        async with queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                async with message.process():
+                    body = message.body.decode()
+                    parsed_message = None
+                    try:
+                        parsed_message = json.loads(body)
+                        print(f"Received Audit: {parsed_message}")
+                        await process_audit(parsed_message)
+                    except Exception as e:
+                        print(f"Error processing audit message: {e}")
+                        if parsed_message and "AuditId" in parsed_message:
+                            audit_id = parsed_message["AuditId"]
+                            try:
+                                async with PostgresRepository(DATABASE_URL) as db_repo:
+                                    await db_repo.mark_failed(audit_id)
+                                print(f"Successfully marked audit job {audit_id} as Failed in DB")
+                            except Exception as db_err:
+                                print(f"Failed to mark audit job {audit_id} as Failed in DB: {db_err}")
 
 
 def start_consumer():
-
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            host=RABBITMQ_HOST
-        )
-    )
-
-    channel = connection.channel()
-
-    channel.exchange_declare(
-        exchange="audit.exchange",
-        exchange_type="topic",
-        durable=True
-    )
-
-    channel.queue_declare(
-        queue="audit.queue",
-        durable=True
-    )
-
-    channel.queue_bind(
-        exchange="audit.exchange",
-        queue="audit.queue",
-        routing_key="audit.created"
-    )
-
-    channel.basic_consume(
-        queue="audit.queue",
-        on_message_callback=callback
-    )
-
-    print(
-        "Waiting for messages..."
-    )
-
-    channel.start_consuming()
+    asyncio.run(run_consumer())

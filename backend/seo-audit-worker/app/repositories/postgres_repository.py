@@ -8,12 +8,28 @@ class PostgresRepository:
     def __init__(self, connection_string):
 
         self.connection_string = connection_string
+        self._conn = None
+
+    async def __aenter__(self):
+        self._conn = await asyncpg.connect(self.connection_string)
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self._conn:
+            await self._conn.close()
+            self._conn = None
 
     async def get_connection(self):
-
+        if self._conn:
+            return self._conn
         return await asyncpg.connect(
             self.connection_string
         )
+
+    async def close_connection(self, conn):
+        if self._conn is None:
+            await conn.close()
+
     async def save_report(
         self,
         audit_id,
@@ -70,48 +86,51 @@ class PostgresRepository:
                 on_page_score
             )
 
-        await conn.close()
+        await self.close_connection(conn)
         return report_id
 
-
-    async def save_issue(
+    async def save_issues(
         self,
         report_id,
-        issue
+        issues
     ):
+        if not issues:
+            return
 
         conn = await self.get_connection()
+        report_uuid = uuid.UUID(report_id) if isinstance(report_id, str) else report_id
 
-        await conn.execute(
-            """
-            INSERT INTO seo_issues
+        data = [
             (
-                "Id",
-                "ReportId",
-                "Severity",
-                "Title",
-                "Description",
-                "Recommendation"
+                uuid.uuid4(),
+                report_uuid,
+                issue["severity"],
+                issue["title"],
+                issue.get("description", ""),
+                issue.get("recommendation", "")
             )
-            VALUES
-            (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                $6
-            )
-            """,
-            uuid.uuid4(),
-            uuid.UUID(report_id) if isinstance(report_id, str) else report_id,
-            issue["severity"],
-            issue["title"],
-            issue.get("description", ""),
-            issue.get("recommendation", "")
-        )
+            for issue in issues
+        ]
 
-        await conn.close()
+        async with conn.transaction():
+            await conn.executemany(
+                """
+                INSERT INTO seo_issues
+                (
+                    "Id",
+                    "ReportId",
+                    "Severity",
+                    "Title",
+                    "Description",
+                    "Recommendation"
+                )
+                VALUES
+                ($1, $2, $3, $4, $5, $6)
+                """,
+                data
+            )
+
+        await self.close_connection(conn)
 
     async def mark_completed(
         self,
@@ -130,7 +149,7 @@ class PostgresRepository:
             uuid.UUID(audit_id) if isinstance(audit_id, str) else audit_id
         )
 
-        await conn.close()
+        await self.close_connection(conn)
 
     async def mark_failed(
         self,
@@ -149,4 +168,4 @@ class PostgresRepository:
             uuid.UUID(audit_id) if isinstance(audit_id, str) else audit_id
         )
 
-        await conn.close()
+        await self.close_connection(conn)

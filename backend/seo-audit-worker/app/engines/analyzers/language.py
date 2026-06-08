@@ -1,9 +1,7 @@
 from bs4 import BeautifulSoup
 
 def analyze_language(html: str, response_headers: dict, target_language: str = None):
-    try:
-        soup = BeautifulSoup(html, "html.parser")
-        result = {
+    result = {
             "html_lang": None,
             "http_content_language": response_headers.get("Content-Language") if response_headers else None,
             "hreflang_tag": [],
@@ -11,6 +9,8 @@ def analyze_language(html: str, response_headers: dict, target_language: str = N
             "status": "Valid",
             "warning": []
         }
+    try:
+        soup = BeautifulSoup(html, "html.parser")
         html_tag = soup.find("html")
         if html_tag and html_tag.has_attr("lang"):
             declared_lang = html_tag["lang"]
@@ -18,7 +18,6 @@ def analyze_language(html: str, response_headers: dict, target_language: str = N
             if target_language:
                 target_lower = target_language.lower()
                 declared_lower = declared_lang.lower()
-                # Check if declared language matches target language (e.g. "vi-VN" matches "vi")
                 if not declared_lower.startswith(target_lower) and not target_lower.startswith(declared_lower):
                     result["warning"].append(f"Ngôn ngữ khai báo '{declared_lang}' không khớp với ngôn ngữ mục tiêu '{target_language}'")
                     result["status"] = "warning"

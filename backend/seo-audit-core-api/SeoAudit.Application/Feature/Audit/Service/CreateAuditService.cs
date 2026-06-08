@@ -41,7 +41,7 @@ public class CreateAuditService(
         };
 
         await publisher.PublishAsync(
-            "seo-audit-created",
+            "audit.created",
             auditCreatedEvent,
             cancellationToken);
 

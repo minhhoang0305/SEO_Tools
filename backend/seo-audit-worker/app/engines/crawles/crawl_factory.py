@@ -17,45 +17,38 @@ class CrawlerFactory:
         language: str = None,
         country: str = None
     ):
+        should_fallback = False
+        result = None
 
-        http_crawler = HttpCrawler()
+        try:
+            http_crawler = HttpCrawler()
+            result = await http_crawler.crawl(
+                url,
+                language=language,
+                country=country
+            )
 
-        result = await http_crawler.crawl(
-            url,
-            language=language,
-            country=country
-        )
+            if result.get("status_code") != 200:
+                print(f"HTTP crawl returned status code {result.get('status_code')}. Trying Playwright fallback...")
+                should_fallback = True
+            else:
+                soup = BeautifulSoup(
+                    result["html"],
+                    "html.parser"
+                )
+                images = len(soup.find_all("img"))
+                links = len(soup.find_all("a"))
+                if images == 0 and links == 0:
+                    print("Empty HTML contents detected. Trying Playwright fallback...")
+                    should_fallback = True
+        except Exception as ex:
+            print(f"HTTP Crawl failed with error: {ex}. Falling back to Playwright...")
+            should_fallback = True
 
-        soup = BeautifulSoup(
-            result["html"],
-            "html.parser"
-        )
-
-        images = len(
-            soup.find_all("img")
-        )
-
-        links = len(
-            soup.find_all("a")
-        )
-
-        should_render = (
-            images == 0
-            and
-            links == 0
-        )
-
-        if not should_render:
+        if not should_fallback and result:
             return result
 
-        print(
-            "Fallback to Playwright..."
-        )
-
-        playwright_crawler = (
-            PlaywrightCrawler()
-        )
-
+        playwright_crawler = PlaywrightCrawler()
         return await playwright_crawler.crawl(
             url,
             language=language,
