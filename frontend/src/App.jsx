@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import SubmitWebsite from './pages/SubmitWebsite';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -17,6 +18,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Trang Submit Website bảo mật */}
+          <Route
+            path="/submit-website"
+            element={
+              <ProtectedRoute>
+                <SubmitWebsite />
               </ProtectedRoute>
             }
           />

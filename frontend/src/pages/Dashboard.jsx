@@ -285,6 +285,24 @@ export default function Dashboard() {
           </button>
         </div>
 
+        {/* Feature Navigation Toggle */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <button 
+            className="btn btn-primary" 
+            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem', cursor: 'default' }}
+            disabled
+          >
+            Crawl & Audit SEO
+          </button>
+          <button 
+            onClick={() => navigate('/submit-website')} 
+            className="btn btn-outline" 
+            style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem', display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}
+          >
+            Submit SEO Platforms <ArrowRight size={14} />
+          </button>
+        </div>
+
         {/* Start New Audit */}
         <div>
           <h2 className="form-title">Crawl & Audit Website</h2>
