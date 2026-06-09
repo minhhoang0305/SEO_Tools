@@ -104,10 +104,10 @@ class PostgresRepository:
             (
                 uuid.uuid4(),
                 report_uuid,
-                issue["severity"],
-                issue["title"],
-                issue.get("description", ""),
-                issue.get("recommendation", "")
+                issue["severity"][:50] if issue.get("severity") else "",
+                issue["title"][:255] if issue.get("title") else "",
+                issue.get("description", "")[:4000] if issue.get("description") else "",
+                issue.get("recommendation", "")[:4000] if issue.get("recommendation") else ""
             )
             for issue in issues
         ]
@@ -168,4 +168,63 @@ class PostgresRepository:
             uuid.UUID(audit_id) if isinstance(audit_id, str) else audit_id
         )
 
+        await self.close_connection(conn)
+
+    async def update_submit_job_status(self, job_id, status):
+        conn = await self.get_connection()
+        job_uuid = uuid.UUID(job_id) if isinstance(job_id, str) else job_id
+        
+        completed_at_clause = ", \"CompletedAt\" = NOW()" if status in ["Completed", "Failed"] else ""
+        
+        await conn.execute(
+            f"""
+            UPDATE submit_jobs
+            SET "Status" = $1
+                {completed_at_clause}
+            WHERE "Id" = $2
+            """,
+            status,
+            job_uuid
+        )
+        await self.close_connection(conn)
+
+    async def update_submit_job_detail_status(self, detail_id, status, error_message=None, response_data=None):
+        conn = await self.get_connection()
+        detail_uuid = uuid.UUID(detail_id) if isinstance(detail_id, str) else detail_id
+        
+        await conn.execute(
+            """
+            UPDATE submit_job_details
+            SET "Status" = $1,
+                "ErrorMessage" = $2,
+                "ResponseData" = $3,
+                "UpdatedAt" = NOW()
+            WHERE "Id" = $4
+            """,
+            status,
+            error_message,
+            response_data,
+            detail_uuid
+        )
+        await self.close_connection(conn)
+
+    async def save_submit_audit_log(self, detail_id, action, status, log_content=None, duration_ms=None):
+        conn = await self.get_connection()
+        detail_uuid = uuid.UUID(detail_id) if isinstance(detail_id, str) else detail_id
+        log_id = uuid.uuid4()
+        
+        await conn.execute(
+            """
+            INSERT INTO submit_audit_logs
+            ("Id", "JobDetailId", "Action", "Status", "LogContent", "DurationMs", "Timestamp")
+            VALUES
+            ($1, $2, $3, $4, $5, $6, NOW())
+            """,
+            log_id,
+            detail_uuid,
+            action,
+            status,
+            log_content,
+            duration_ms
+        )
         await self.close_connection(conn)

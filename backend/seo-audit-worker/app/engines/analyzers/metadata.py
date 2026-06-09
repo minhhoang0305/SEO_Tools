@@ -26,18 +26,17 @@ def analyze_metadata(html: str, url: str):
             ""
         )
 
-    canonical = ""
-
-    canonical_tag = soup.find(
+    canonical_tag = soup.find_all(
         "link",
         attrs={"rel": "canonical"}
     )
+    canonical_count = len(canonical_tag)
+    canonical = ""
+    is_absolute = False
 
-    if canonical_tag:
-        canonical = canonical_tag.get(
-            "href",
-            ""
-        )
+    if canonical_count > 0:
+        canonical = canonical_tag[0].get("href","").strip()
+        is_absolute = canonical.startswith("https") or canonical.startswith("http")
 
     robots = ""
 
@@ -57,5 +56,7 @@ def analyze_metadata(html: str, url: str):
         "title": title,
         "meta_description": meta_description,
         "canonical": canonical,
+        "canonical_count": canonical_count,
+        "canonical_absolute": is_absolute,
         "robots": robots
     }

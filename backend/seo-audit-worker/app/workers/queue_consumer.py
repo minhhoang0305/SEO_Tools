@@ -1,6 +1,5 @@
 import json
 import asyncio
-
 import aio_pika
 
 from app.core.config import (
@@ -13,6 +12,8 @@ from app.engines.crawler import crawl
 from app.engines.technical_seo import analyze_technical_seo
 from app.engines.scoring import calculate
 from app.repositories.postgres_repository import PostgresRepository
+from app.engines.llm import generate_ai_seo_suggestions
+# from app.core.helper import print_seo_result
 
 
 async def process_audit(message):
@@ -36,9 +37,8 @@ async def process_audit(message):
         crawl_result,
         target_language=language
     )
-
-    print("\nSEO Analysis")
     print(seo_result)
+    # print_seo_result(seo_result)
 
     score_result = calculate(
         seo_result,
@@ -48,6 +48,24 @@ async def process_audit(message):
 
     print("\nSEO Score")
     print(score_result)
+
+    print("Đang lấy gợi ý tối ưu từ AI (Gemini)...")
+    ai_result = await generate_ai_seo_suggestions(
+        url=url,
+        seo_result=seo_result,
+        issues=score_result["issues"],
+        keyword=keyword
+    )
+    if ai_result.get("success"):
+        score_result = {
+            "score": ai_result["score"],
+            "technical_score": ai_result["technical_score"],
+            "on_page_score": ai_result["on_page_score"],
+            "issues": ai_result["issues"]
+        }
+        print("Đã tích hợp thành công kết quả chấm điểm và gợi ý từ AI!")
+    else:
+        print(f"Bỏ qua gợi ý AI do lỗi: {ai_result.get('error')}. Sử dụng kết quả tính toán tĩnh.")
 
     async with PostgresRepository(DATABASE_URL) as db_repo:
         report_id = await db_repo.save_report(

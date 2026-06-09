@@ -9,6 +9,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AuditJob> AuditJobs => Set<AuditJob>();
     public DbSet<SeoReport> SeoReports => Set<SeoReport>();
     public DbSet<SeoIssue> SeoIssues => Set<SeoIssue>();
+    public DbSet<SeoPlatform> SeoPlatforms => Set<SeoPlatform>();
+    public DbSet<PlatformCredential> PlatformCredentials => Set<PlatformCredential>();
+    public DbSet<SubmitJob> SubmitJobs => Set<SubmitJob>();
+    public DbSet<SubmitJobDetail> SubmitJobDetails => Set<SubmitJobDetail>();
+    public DbSet<SubmitAuditLog> SubmitAuditLogs => Set<SubmitAuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

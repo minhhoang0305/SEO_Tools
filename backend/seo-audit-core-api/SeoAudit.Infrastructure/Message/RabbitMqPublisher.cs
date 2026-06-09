@@ -42,7 +42,7 @@ public class RabbitMqPublisher : IMessagePublisher
 
         await channel.BasicPublishAsync(
             exchange: ExchangeName,
-            routingKey: "audit.created",
+            routingKey: routingkey,
             mandatory: false,
             body: body,
             cancellationToken: cancellationToken);

@@ -7,6 +7,7 @@ from app.engines.analyzers.language import analyze_language
 from app.engines.analyzers.link import (
     analyze_external_links,
     analyze_internal_links,
+    analyze_broken_links,
 )
 from app.engines.analyzers.meta import analyze_meta
 from app.engines.analyzers.metadata import analyze_metadata
@@ -46,7 +47,10 @@ async def analyze_technical_seo(crawl_result, target_language: str = None):
     images = analyze_images(html_content)
     internal_links = analyze_internal_links(html_content, url)
     external_links = analyze_external_links(html_content, url)
+    broken_links = await analyze_broken_links(internal_links["links"], external_links["links"], base_url)
+
     web_vitals = await analyze_web_vitals(url)
+
 
     response_headers = crawl_result.get("headers", {})
     language = analyze_language(html_content, response_headers=response_headers, target_language=target_language)
@@ -66,5 +70,6 @@ async def analyze_technical_seo(crawl_result, target_language: str = None):
         "internal_links": internal_links,
         "external_links": external_links,
         "languages": language,
-        "web_vitals": web_vitals   
+        "web_vitals": web_vitals,
+        "broken_links": broken_links
     }

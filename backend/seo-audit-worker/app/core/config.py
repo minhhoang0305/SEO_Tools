@@ -27,3 +27,6 @@ DATABASE_URL = (
     f"{POSTGRES_PORT}/"
     f"{POSTGRES_DB}"
 )
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "seo_tools_default_super_secret_key_32bytes!!")

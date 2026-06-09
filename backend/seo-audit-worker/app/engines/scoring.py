@@ -15,9 +15,6 @@ def calculate(technical_result, keyword=None, target_language=None):
     images = technical_result["images"]
     languages = technical_result.get("languages", {})
 
-    # --- TECHNICAL SEO RULES (Max 100 points, 20 points per rule) ---
-
-    # 1. Robots.txt
     if robots["exists"]:
         technical_score += 20
     else:
@@ -28,7 +25,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "recommendation": "Tạo tệp robots.txt ở thư mục gốc của website để hướng dẫn các bot tìm kiếm cách thu thập thông tin."
         })
 
-    # 2. Sitemap.xml
     if sitemap["exists"]:
         technical_score += 20
     else:
@@ -39,7 +35,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "recommendation": "Tạo tệp sitemap.xml chứa danh sách URL của trang web và khai báo trong robots.txt hoặc Google Search Console."
         })
 
-    # 3. Redirects
     if redirect["redirect_count"] <= 2:
         technical_score += 20
     else:
@@ -50,7 +45,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "recommendation": "Giảm số lượng chuyển hướng trung gian để cải thiện tốc độ tải trang và SEO."
         })
 
-    # 4. Open Graph
     if (
         opengraph["has_og_title"]
         and
@@ -67,7 +61,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "recommendation": "Thêm đầy đủ các thẻ meta Open Graph vào phần <head>."
         })
 
-    # 5. Twitter Card
     if twitter["has_twitter_card"]:
         technical_score += 20
     else:
@@ -77,8 +70,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "description": "Thiếu thẻ meta Twitter Card cho mạng xã hội Twitter.",
             "recommendation": "Thêm thẻ <meta name=\"twitter:card\" content=\"summary_large_image\"> vào phần <head>."
         })
-
-    # --- ON-PAGE SEO RULES (Max 100 points) ---
 
     has_keyword = bool(keyword and keyword.strip())
 
@@ -128,7 +119,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "recommendation": "Thêm thẻ <title> chứa từ khóa mục tiêu vào phần head của trang."
         })
 
-    # 2. Meta Description
     if meta["exists"]:
         meta_len = meta["length"]
         if 120 <= meta_len <= 160:
@@ -157,7 +147,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "recommendation": "Thêm thẻ <meta name=\"description\" content=\"...\"> với độ dài từ 120 đến 160 ký tự."
         })
 
-    # 3. Heading (H1)
     h1_count = heading.get("h1_count", 0)
     if h1_count == 1:
         on_page_score += w_h1
@@ -177,7 +166,6 @@ def calculate(technical_result, keyword=None, target_language=None):
             "recommendation": "Chỉ sử dụng duy nhất một thẻ H1 cho tiêu đề chính, các tiêu đề phụ nên chuyển thành H2 hoặc H3."
         })
 
-    # 4. Image alt
     total_imgs = images.get("total_images", 0)
     missing_alt = images.get("missing_alt_count", 0)
     if total_imgs > 0:
@@ -195,11 +183,9 @@ def calculate(technical_result, keyword=None, target_language=None):
     else:
         on_page_score += w_alt
 
-    # 5. Keyword Optimization
     if has_keyword:
         kw_lower = keyword.strip().lower()
 
-        # Keyword in Title
         title_val = title.get("value", "") if title["exists"] else ""
         if title_val and kw_lower in title_val.lower():
             on_page_score += w_kw_title
@@ -211,7 +197,6 @@ def calculate(technical_result, keyword=None, target_language=None):
                 "recommendation": "Chèn từ khóa mục tiêu vào thẻ tiêu đề, tốt nhất là đặt ở đầu tiêu đề để tăng sự liên quan."
             })
 
-        # Keyword in Meta Description
         meta_val = meta.get("value", "") if meta["exists"] else ""
         if meta_val and kw_lower in meta_val.lower():
             on_page_score += w_kw_meta
@@ -223,7 +208,6 @@ def calculate(technical_result, keyword=None, target_language=None):
                 "recommendation": "Chèn từ khóa mục tiêu một cách tự nhiên vào nội dung thẻ mô tả để tăng tỷ lệ click (CTR)."
             })
 
-        # Keyword in H1
         h1_texts = heading.get("h1_texts", [])
         if any(kw_lower in h.lower() for h in h1_texts):
             on_page_score += w_kw_h1
@@ -235,7 +219,6 @@ def calculate(technical_result, keyword=None, target_language=None):
                 "recommendation": "Chèn từ khóa mục tiêu vào tiêu đề chính H1 của trang web."
             })
 
-    # 6. Language Warnings
     if languages:
         for warning in languages.get("warning", []):
             on_page_score -= 5
@@ -256,7 +239,6 @@ def calculate(technical_result, keyword=None, target_language=None):
 
     on_page_score = max(0, min(100, on_page_score))
 
-    # Calculate overall SEO score (average of technical and on-page score)
     seo_score = int((technical_score + on_page_score) / 2)
 
     return {
@@ -264,4 +246,4 @@ def calculate(technical_result, keyword=None, target_language=None):
         "technical_score": technical_score,
         "on_page_score": on_page_score,
         "issues": issues
-    }
+    }

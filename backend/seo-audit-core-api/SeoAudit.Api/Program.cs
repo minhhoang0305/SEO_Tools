@@ -15,6 +15,7 @@ using SeoAudit.Infrastructure.Messaging;
 using SeoAudit.Infrastructure.Persistence.Data;
 using SeoAudit.Infrastructure.Repositories;
 using SeoAudit.Infrastructure.Repository;
+using SeoAudit.Infrastructure.Services;
 using StackExchange.Redis;
 using System.Threading.RateLimiting;
 using System.Diagnostics;
@@ -40,6 +41,10 @@ builder.Services.AddScoped<IRefreshService, RefreshService>();
 builder.Services.AddScoped<CreateAuditService>();
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IMessagePublisher, RabbitMqPublisher>();
+builder.Services.AddScoped<ISubmitRepository, SubmitRepository>();
+builder.Services.AddScoped<ICryptographyService, CryptographyService>();
+builder.Services.AddScoped<SaveCredentialService>();
+builder.Services.AddScoped<CreateSubmitJobService>();
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
