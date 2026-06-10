@@ -6,7 +6,7 @@ namespace SeoAudit.Application.Feature.Submit.Contract;
 public class SaveCredentialRequest
 {
     public Guid PlatformId { get; set; }
-    public string CredentialData { get; set; } = string.Empty; // JSON string (ví dụ: raw token hoặc cookies)
+    public string CredentialData { get; set; } = string.Empty;
 }
 
 public class CreateSubmitJobRequest
