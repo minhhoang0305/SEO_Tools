@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   LogOut, Globe, Mail, ShieldCheck, AlertCircle, 
   CheckCircle2, RefreshCw, ArrowLeft, ArrowRight, ExternalLink, 
-  Key, Lock, ChevronDown, ChevronUp, FileText, Settings, Send
+  Lock, ChevronDown, ChevronUp, FileText, Settings, Send
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';
@@ -24,11 +24,11 @@ export default function SubmitWebsite() {
   // Platform settings
   const [platforms, setPlatforms] = useState([]);
   const [isLoadingPlatforms, setIsLoadingPlatforms] = useState(true);
-  const [platformCredentials, setPlatformCredentials] = useState({}); // platformId -> string
   const [activeSettingsPlatformId, setActiveSettingsPlatformId] = useState(null);
-  const [saveCredSuccess, setSaveCredSuccess] = useState('');
-  const [saveCredError, setSaveCredError] = useState('');
-  const [isSavingCred, setIsSavingCred] = useState(false);
+  const [connectSuccess, setConnectSuccess] = useState('');
+  const [connectError, setConnectError] = useState('');
+  const [isConnectingPlatform, setIsConnectingPlatform] = useState(false);
+  const [sessionFile, setSessionFile] = useState(null);
 
   // Job Submission States
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
@@ -121,15 +121,20 @@ export default function SubmitWebsite() {
     }
   };
 
-  // Save Credentials (cookies)
-  const handleSaveCredential = async (platformId) => {
-    setSaveCredError('');
-    setSaveCredSuccess('');
-    setIsSavingCred(true);
-    try {
-      const credData = platformCredentials[platformId] || '';
-      if (!credData) throw new Error('Vui lòng điền thông tin session cookie.');
+  // Import locally generated StackShare session
+  const handleImportPlatformSession = async (platformId) => {
+    setConnectError('');
+    setConnectSuccess('');
+    setIsConnectingPlatform(true);
 
+    if (!sessionFile) {
+      setConnectError('Vui lòng chọn file stackshare_storage_state.json trước khi import.');
+      setIsConnectingPlatform(false);
+      return;
+    }
+
+    try {
+      const credentialData = await sessionFile.text();
       const idToken = await currentUser.getIdToken();
       const response = await fetch(`${API_BASE_URL}/api/submit/credentials`, {
         method: 'POST',
@@ -139,22 +144,26 @@ export default function SubmitWebsite() {
         },
         body: JSON.stringify({
           platformId,
-          credentialData: credData
+          credentialData
         })
       });
 
-      if (!response.ok) throw new Error('Lưu credentials thất bại.');
-      setSaveCredSuccess('Đã lưu thông tin xác thực thành công!');
-      
-      // Clear after a few seconds
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.Message || 'Không thể import session.');
+      }
+
+      setConnectSuccess('Đã import session thành công. Docker sẽ dùng storage_state này cho Submit.');
+      setSessionFile(null);
+
       setTimeout(() => {
-        setSaveCredSuccess('');
+        setConnectSuccess('');
         setActiveSettingsPlatformId(null);
       }, 2000);
     } catch (err) {
-      setSaveCredError(err.message);
+      setConnectError(err.message);
     } finally {
-      setIsSavingCred(false);
+      setIsConnectingPlatform(false);
     }
   };
 
@@ -473,7 +482,7 @@ export default function SubmitWebsite() {
                         </span>
                       </label>
 
-                      {/* Setup button for credentials if UI automation */}
+                      {/* Setup button for local session import if UI automation */}
                       {platform.submitMethod !== 'API' && (
                         <button
                           type="button"
@@ -481,11 +490,11 @@ export default function SubmitWebsite() {
                             setActiveSettingsPlatformId(
                               activeSettingsPlatformId === platform.id ? null : platform.id
                             );
-                            setSaveCredSuccess('');
-                            setSaveCredError('');
+                            setConnectSuccess('');
+                            setConnectError('');
                           }}
                           className="refresh-btn"
-                          title="Cấu hình Cookies"
+                          title="Import Session"
                           style={{ padding: '2px' }}
                         >
                           <Settings size={14} style={{ color: activeSettingsPlatformId === platform.id ? 'hsl(var(--accent-primary))' : 'inherit' }} />
@@ -502,23 +511,28 @@ export default function SubmitWebsite() {
               <div style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.15)', borderRadius: '8px', padding: '0.75rem', marginTop: '0.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'hsl(var(--accent-primary))', fontWeight: 500, fontSize: '0.8rem', marginBottom: '0.5rem' }}>
                   <Lock size={14} />
-                  Cấu hình Session Cookie cho {platforms.find(p => p.id === activeSettingsPlatformId)?.name}
+                  Import Session cho {platforms.find(p => p.id === activeSettingsPlatformId)?.name}
                 </div>
                 
-                {saveCredError && <div style={{ color: 'hsl(var(--accent-error))', fontSize: '0.75rem', marginBottom: '4px' }}>{saveCredError}</div>}
-                {saveCredSuccess && <div style={{ color: '#4ade80', fontSize: '0.75rem', marginBottom: '4px' }}>{saveCredSuccess}</div>}
-                
-                <textarea
-                  placeholder='Dán Session Cookies của bạn ở đây... ví dụ: [{"name": "_stackshare_session", "value": "xyz...", "domain": ".stackshare.io", "path": "/"}] hoặc token session thô.'
-                  value={platformCredentials[activeSettingsPlatformId] || ''}
-                  onChange={(e) => setPlatformCredentials({
-                    ...platformCredentials,
-                    [activeSettingsPlatformId]: e.target.value
-                  })}
-                  className="form-input"
-                  rows="3"
-                  style={{ fontSize: '0.75rem', fontFamily: 'monospace', resize: 'none', marginBottom: '0.5rem' }}
-                />
+                {connectError && <div style={{ color: 'hsl(var(--accent-error))', fontSize: '0.75rem', marginBottom: '4px' }}>{connectError}</div>}
+                {connectSuccess && <div style={{ color: '#4ade80', fontSize: '0.75rem', marginBottom: '4px' }}>{connectSuccess}</div>}
+                <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', lineHeight: 1.5, marginBottom: '0.5rem' }}>
+                  Chạy Playwright local để login StackShare một lần, lưu file <code>stackshare_storage_state.json</code>, rồi upload file này vào đây. Docker chỉ dùng file đã import để Submit.
+                </div>
+
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    onChange={(e) => setSessionFile(e.target.files?.[0] || null)}
+                    style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}
+                  />
+                  {sessionFile && (
+                    <div style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))', marginTop: '4px' }}>
+                      Đã chọn: {sessionFile.name}
+                    </div>
+                  )}
+                </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                   <button
@@ -530,12 +544,12 @@ export default function SubmitWebsite() {
                   </button>
                   <button
                     type="button"
-                    disabled={isSavingCred}
-                    onClick={() => handleSaveCredential(activeSettingsPlatformId)}
+                    disabled={isConnectingPlatform}
+                    onClick={() => handleImportPlatformSession(activeSettingsPlatformId)}
                     className="btn btn-primary"
                     style={{ padding: '4px 10px', fontSize: '0.75rem', width: 'auto' }}
                   >
-                    {isSavingCred ? 'Đang lưu...' : 'Lưu Credentials'}
+                    {isConnectingPlatform ? 'Đang import...' : 'Import Session'}
                   </button>
                 </div>
               </div>

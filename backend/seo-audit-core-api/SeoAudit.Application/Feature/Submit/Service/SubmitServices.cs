@@ -40,6 +40,38 @@ public class SaveCredentialService(
     }
 }
 
+public class RequestPlatformConnectService(
+    ISubmitRepository submitRepository,
+    IMessagePublisher publisher)
+{
+    public async Task<Guid> Handle(
+        ConnectPlatformRequest request,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var platform = await submitRepository.GetPlatformByIdAsync(request.PlatformId, cancellationToken);
+        if (platform == null)
+        {
+            throw new InvalidOperationException("Platform không tồn tại.");
+        }
+
+        var requestId = Guid.NewGuid();
+        await publisher.PublishAsync(
+            "platform.connect.requested",
+            new PlatformConnectRequestedEvent
+            {
+                RequestId = requestId,
+                UserId = userId,
+                PlatformId = platform.Id,
+                PlatformCode = platform.Code,
+                PlatformName = platform.Name
+            },
+            cancellationToken);
+
+        return requestId;
+    }
+}
+
 public class CreateSubmitJobService(
     ISubmitRepository submitRepository,
     IMessagePublisher publisher)

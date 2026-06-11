@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
+from app.platforms.session_manager import LoginSessionManager
+
 
 DEFAULT_STORAGE_STATE_PATH = str(
     Path(__file__).resolve().parents[2]
@@ -12,19 +14,16 @@ DEFAULT_STORAGE_STATE_PATH = str(
 
 class FileStorageStateStore:
     def __init__(self, storage_state_path: Optional[str] = None):
-        self.storage_state_path = Path(
+        self.manager = LoginSessionManager(
             storage_state_path
             or os.getenv("STACKSHARE_STORAGE_STATE_PATH", DEFAULT_STORAGE_STATE_PATH).strip()
         )
 
     def exists(self) -> bool:
-        return self.storage_state_path.exists()
+        return self.manager.exists()
 
     def context_kwargs(self) -> dict[str, Any]:
-        if not self.exists():
-            return {}
-        return {"storage_state": str(self.storage_state_path)}
+        return self.manager.load_context_options()
 
     async def save(self, context) -> None:
-        self.storage_state_path.parent.mkdir(parents=True, exist_ok=True)
-        await context.storage_state(path=str(self.storage_state_path))
+        await self.manager.save(context)

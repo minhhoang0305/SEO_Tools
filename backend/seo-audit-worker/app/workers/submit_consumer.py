@@ -26,22 +26,18 @@ async def process_submit_job(message):
         all_success = True
         at_least_one_processed = False
 
-        # 2. Lần lượt chạy submit cho từng platform được yêu cầu
         for platform_info in platforms:
             detail_id = platform_info["JobDetailId"]
             platform_code = platform_info["PlatformCode"]
             
             print(f"-> Submit lên Platform: {platform_code} (Detail ID: {detail_id})")
             
-            # Cập nhật trạng thái Detail thành Running
             await db_repo.update_submit_job_detail_status(detail_id, "Running")
             
             try:
-                # Khởi tạo submitter từ factory
                 handler = PlatformSubmitFactory.get_submit_handler(platform_info, db_repo)
                 at_least_one_processed = True
                 
-                # Thực hiện gửi
                 result = await handler.submit(website_url, metadata)
                 
                 if result.get("success"):
@@ -65,7 +61,6 @@ async def process_submit_job(message):
                 await db_repo.update_submit_job_detail_status(detail_id, "Failed", error_message=err_msg)
                 await db_repo.save_submit_audit_log(detail_id, "SystemCrash", "Failed", err_msg)
 
-        # 3. Cập nhật trạng thái Job chính sau khi hoàn thành tất cả
         final_job_status = "Completed"
         if at_least_one_processed and not all_success:
             final_job_status = "Failed"
@@ -82,20 +77,17 @@ async def run_submit_consumer():
     async with connection:
         channel = await connection.channel()
 
-        # Khai báo exchange dạng Topic đồng bộ với Backend
         exchange = await channel.declare_exchange(
             "audit.exchange",
             type=aio_pika.ExchangeType.TOPIC,
             durable=True
         )
 
-        # Khai báo queue riêng cho tính năng Submit
         queue = await channel.declare_queue(
             "seo-submit",
             durable=True
         )
 
-        # Bind queue vào exchange với routing key tương ứng
         await queue.bind(
             exchange=exchange,
             routing_key="submit.created"

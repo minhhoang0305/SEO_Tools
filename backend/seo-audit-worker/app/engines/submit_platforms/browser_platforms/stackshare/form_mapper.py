@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+from typing import Any, Dict
+
+from app.platforms.browser_automation import BrowserAutomationHelper
+from app.platforms.token_extractor import TokenExtractor
+
+from .constants import STACKSHARE_DEFAULT_SENTINELS
+from .selectors import (
+    STACKSHARE_DESCRIPTION_SELECTORS,
+    STACKSHARE_DOCS_URL_SELECTORS,
+    STACKSHARE_FEATURES_SELECTORS,
+    STACKSHARE_LOGO_SELECTORS,
+    STACKSHARE_SHORT_DESCRIPTION_SELECTORS,
+    STACKSHARE_TOOL_NAME_SELECTORS,
+    STACKSHARE_WEBSITE_INPUT_SELECTORS,
+    STACKSHARE_WEBSITE_URL_SELECTORS,
+)
+
+
+class StackShareFormMapper:
+    def __init__(self, handler: Any):
+        self.handler = handler
+        self.browser_helper: BrowserAutomationHelper | None = None
+
+    def bind_browser_helper(self, browser_helper: BrowserAutomationHelper) -> None:
+        self.browser_helper = browser_helper
+
+    def build_defaults(self, metadata: Dict[str, Any], url: str, logo_file_path: str) -> Dict[str, str]:
+        site_name = metadata.get("SiteName") or "My SEO Tool Site"
+        site_description = (
+            metadata.get("Description")
+            or "A premium online platform for SEO utilities and tracking."
+        )
+        site_short_description = metadata.get("ShortDescription") or site_description
+        docs_url = metadata.get("DocsUrl") or metadata.get("DocumentationUrl") or ""
+        features = metadata.get("Features") or metadata.get("Keywords") or ""
+        return {
+            "site_name": site_name,
+            "site_description": site_description,
+            "site_short_description": site_short_description,
+            "docs_url": docs_url,
+            "features": features,
+            "logo_file_path": logo_file_path,
+            "url": url,
+        }
+
+    def _is_valid(self, value: str) -> bool:
+        normalized = (value or "").strip().lower()
+        if not normalized:
+            return False
+        return normalized not in STACKSHARE_DEFAULT_SENTINELS
+
+    async def fill_url(self, page, url: str, browser_helper: BrowserAutomationHelper) -> bool:
+        return await browser_helper.fill_first_visible(page, STACKSHARE_WEBSITE_INPUT_SELECTORS, url)
+
+    async def extract_crawled_data(self, page) -> Dict[str, str]:
+        extractor = TokenExtractor(page)
+        return {
+            "tool_name": await extractor.extract_input_value(STACKSHARE_TOOL_NAME_SELECTORS),
+            "website_url": await extractor.extract_input_value(STACKSHARE_WEBSITE_URL_SELECTORS),
+            "docs_url": await extractor.extract_input_value(STACKSHARE_DOCS_URL_SELECTORS),
+            "description": await extractor.extract_text(STACKSHARE_DESCRIPTION_SELECTORS),
+            "short_description": await extractor.extract_text(STACKSHARE_SHORT_DESCRIPTION_SELECTORS),
+            "features": await extractor.extract_text(STACKSHARE_FEATURES_SELECTORS),
+            "logo": await extractor.extract_input_value(STACKSHARE_LOGO_SELECTORS),
+        }
+
+    def normalize_crawled_data(self, crawled: Dict[str, str], defaults: Dict[str, str]) -> Dict[str, str]:
+        normalized = dict(crawled)
+        if not self._is_valid(normalized.get("tool_name", "")):
+            normalized["tool_name"] = defaults["site_name"]
+        if not self._is_valid(normalized.get("website_url", "")):
+            normalized["website_url"] = defaults["url"]
+        if not self._is_valid(normalized.get("docs_url", "")):
+            normalized["docs_url"] = defaults["docs_url"]
+        if not self._is_valid(normalized.get("description", "")):
+            normalized["description"] = defaults["site_description"]
+        if not self._is_valid(normalized.get("short_description", "")):
+            normalized["short_description"] = defaults["site_short_description"]
+        if not self._is_valid(normalized.get("features", "")):
+            normalized["features"] = defaults["features"]
+        if not self._is_valid(normalized.get("logo", "")):
+            normalized["logo"] = defaults["logo_file_path"]
+        return normalized
+
+    async def apply_form(self, page, browser_helper: BrowserAutomationHelper, crawled: Dict[str, str]) -> None:
+        await browser_helper.fill_first_visible(page, STACKSHARE_TOOL_NAME_SELECTORS, crawled.get("tool_name", ""))
+        await browser_helper.fill_first_visible(page, STACKSHARE_WEBSITE_URL_SELECTORS, crawled.get("website_url", ""))
+        await browser_helper.fill_first_visible(page, STACKSHARE_DOCS_URL_SELECTORS, crawled.get("docs_url", ""))
+        await browser_helper.fill_first_visible(page, STACKSHARE_SHORT_DESCRIPTION_SELECTORS, crawled.get("short_description", ""))
+        await browser_helper.fill_first_visible(page, STACKSHARE_DESCRIPTION_SELECTORS, crawled.get("description", ""))
+        await browser_helper.fill_first_visible(page, STACKSHARE_FEATURES_SELECTORS, crawled.get("features", ""))

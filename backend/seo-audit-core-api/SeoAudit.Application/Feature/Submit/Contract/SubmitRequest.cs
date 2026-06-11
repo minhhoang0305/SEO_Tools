@@ -9,6 +9,11 @@ public class SaveCredentialRequest
     public string CredentialData { get; set; } = string.Empty;
 }
 
+public class ConnectPlatformRequest
+{
+    public Guid PlatformId { get; set; }
+}
+
 public class CreateSubmitJobRequest
 {
     public string WebsiteUrl { get; set; } = string.Empty;

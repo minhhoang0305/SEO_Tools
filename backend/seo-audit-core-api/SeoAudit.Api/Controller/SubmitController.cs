@@ -47,6 +47,20 @@ public class SubmitController(
         return Ok(new { Message = "Lưu thông tin xác thực thành công." });
     }
 
+    [HttpPost("platforms/connect")]
+    public async Task<IActionResult> ConnectPlatform(
+        [FromBody] ConnectPlatformRequest request,
+        CancellationToken cancellationToken)
+    {
+        var user = await GetCurrentUserAsync(cancellationToken);
+        if (user == null) return Unauthorized();
+
+        return Accepted(new
+        {
+            Message = "Flow Connect đã chuyển sang local login. Hãy dùng Playwright local để xuất storage_state, sau đó import file JSON qua UI."
+        });
+    }
+
     [HttpPost("jobs")]
     public async Task<IActionResult> CreateJob(
         [FromBody] CreateSubmitJobRequest request,

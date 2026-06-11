@@ -1,6 +1,5 @@
 import json
 import asyncio
-import aio_pika
 
 from app.core.config import (
     RABBITMQ_HOST,
@@ -13,6 +12,7 @@ from app.engines.technical_seo import analyze_technical_seo
 from app.engines.scoring import calculate
 from app.repositories.postgres_repository import PostgresRepository
 from app.engines.llm import generate_ai_seo_suggestions
+from app.platforms.queue_processor import QueueJobProcessor
 # from app.core.helper import print_seo_result
 
 
@@ -81,51 +81,29 @@ async def process_audit(message):
     print(f"Successfully processed and saved audit for job {audit_id}")
 
 
+async def handle_audit_error(message, exc: Exception):
+    print(f"Error processing audit message: {exc}")
+    if message and "AuditId" in message:
+        audit_id = message["AuditId"]
+        try:
+            async with PostgresRepository(DATABASE_URL) as db_repo:
+                await db_repo.mark_failed(audit_id)
+            print(f"Successfully marked audit job {audit_id} as Failed in DB")
+        except Exception as db_err:
+            print(f"Failed to mark audit job {audit_id} as Failed in DB: {db_err}")
+
+
 async def run_consumer():
-    connection = await aio_pika.connect_robust(
-        host=RABBITMQ_HOST
+    processor = QueueJobProcessor(
+        host=RABBITMQ_HOST,
+        exchange_name="audit.exchange",
+        queue_name=RABBITMQ_QUEUE,
+        routing_key="audit.created",
     )
 
-    async with connection:
-        channel = await connection.channel()
+    print("Waiting for messages...")
 
-        await channel.declare_exchange(
-            "audit.exchange",
-            type=aio_pika.ExchangeType.TOPIC,
-            durable=True
-        )
-
-        queue = await channel.declare_queue(
-            RABBITMQ_QUEUE,
-            durable=True
-        )
-
-        await queue.bind(
-            exchange="audit.exchange",
-            routing_key="audit.created"
-        )
-
-        print("Waiting for messages...")
-
-        async with queue.iterator() as queue_iter:
-            async for message in queue_iter:
-                async with message.process():
-                    body = message.body.decode()
-                    parsed_message = None
-                    try:
-                        parsed_message = json.loads(body)
-                        print(f"Received Audit: {parsed_message}")
-                        await process_audit(parsed_message)
-                    except Exception as e:
-                        print(f"Error processing audit message: {e}")
-                        if parsed_message and "AuditId" in parsed_message:
-                            audit_id = parsed_message["AuditId"]
-                            try:
-                                async with PostgresRepository(DATABASE_URL) as db_repo:
-                                    await db_repo.mark_failed(audit_id)
-                                print(f"Successfully marked audit job {audit_id} as Failed in DB")
-                            except Exception as db_err:
-                                print(f"Failed to mark audit job {audit_id} as Failed in DB: {db_err}")
+    await processor.run(process_audit, handle_audit_error)
 
 
 def start_consumer():

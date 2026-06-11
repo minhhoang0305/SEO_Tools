@@ -77,4 +77,10 @@ public class SubmitRepository(AppDbContext dbContext) : ISubmitRepository
         return await dbContext.SeoPlatforms
             .FirstOrDefaultAsync(x => x.Code == code, cancellationToken);
     }
+
+    public async Task<SeoPlatform?> GetPlatformByIdAsync(Guid platformId, CancellationToken cancellationToken)
+    {
+        return await dbContext.SeoPlatforms
+            .FirstOrDefaultAsync(x => x.Id == platformId, cancellationToken);
+    }
 }

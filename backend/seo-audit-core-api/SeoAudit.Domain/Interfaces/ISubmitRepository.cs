@@ -15,4 +15,5 @@ public interface ISubmitRepository
     Task<PlatformCredential?> GetCredentialAsync(Guid userId, Guid platformId, CancellationToken cancellationToken);
     Task SaveCredentialAsync(PlatformCredential credential, CancellationToken cancellationToken);
     Task<SeoPlatform?> GetPlatformByCodeAsync(string code, CancellationToken cancellationToken);
+    Task<SeoPlatform?> GetPlatformByIdAsync(Guid platformId, CancellationToken cancellationToken);
 }
