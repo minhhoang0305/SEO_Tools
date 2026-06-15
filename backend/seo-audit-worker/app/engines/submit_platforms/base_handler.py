@@ -15,7 +15,7 @@ class BaseSubmitHandler(ABC):
         self.audit_logger = AuditLogHelper(self.db_repo, self.detail_id)
 
     @abstractmethod
-    async def submit(self, url: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+    async def submit(self, url: str, metadata: Dict[str, Any], mode: str = "final") -> Dict[str, Any]:
         """
         Thực hiện gửi URL lên SEO platform và trả về kết quả dưới dạng:
         {

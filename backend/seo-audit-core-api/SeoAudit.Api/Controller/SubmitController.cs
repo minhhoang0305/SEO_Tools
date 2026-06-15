@@ -108,6 +108,7 @@ public class SubmitController(
                 PlatformCode = d.Platform?.Code ?? string.Empty,
                 Status = d.Status.ToString(),
                 ErrorMessage = d.ErrorMessage,
+                ResponseData = d.ResponseData,
                 UpdatedAt = d.UpdatedAt,
                 AuditLogs = d.AuditLogs.OrderBy(l => l.Timestamp).Select(l => new SubmitAuditLogDto
                 {
@@ -146,6 +147,7 @@ public class SubmitController(
                 PlatformCode = d.Platform?.Code ?? string.Empty,
                 Status = d.Status.ToString(),
                 ErrorMessage = d.ErrorMessage,
+                ResponseData = d.ResponseData,
                 UpdatedAt = d.UpdatedAt
             }).ToList()
         }).ToList();

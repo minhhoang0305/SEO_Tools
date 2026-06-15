@@ -84,10 +84,28 @@ public class CreateSubmitJobService(
         // 1. Tổ chức dữ liệu metadata tùy chọn làm JSON
         var metadata = new Dictionary<string, string>();
         if (!string.IsNullOrWhiteSpace(request.SiteName)) metadata["SiteName"] = request.SiteName;
+        if (!string.IsNullOrWhiteSpace(request.Tagline)) metadata["Tagline"] = request.Tagline;
         if (!string.IsNullOrWhiteSpace(request.Description)) metadata["Description"] = request.Description;
+        if (!string.IsNullOrWhiteSpace(request.ProductDescription)) metadata["ProductDescription"] = request.ProductDescription;
         if (!string.IsNullOrWhiteSpace(request.Keywords)) metadata["Keywords"] = request.Keywords;
-        if (!string.IsNullOrWhiteSpace(request.SitemapUrl)) metadata["SitemapUrl"] = request.SitemapUrl;
-        if (!string.IsNullOrWhiteSpace(request.ContactEmail)) metadata["ContactEmail"] = request.ContactEmail;
+        if (!string.IsNullOrWhiteSpace(request.Categories)) metadata["Categories"] = request.Categories;
+        if (!string.IsNullOrWhiteSpace(request.Category)) metadata["Category"] = request.Category;
+        if (!string.IsNullOrWhiteSpace(request.Stacks)) metadata["Stacks"] = request.Stacks;
+        if (!string.IsNullOrWhiteSpace(request.ProductType)) metadata["ProductType"] = request.ProductType;
+        if (!string.IsNullOrWhiteSpace(request.LaunchPlan)) metadata["LaunchPlan"] = request.LaunchPlan;
+        if (!string.IsNullOrWhiteSpace(request.LaunchWeek)) metadata["LaunchWeek"] = request.LaunchWeek;
+        // if (!string.IsNullOrWhiteSpace(request.SitemapUrl)) metadata["SitemapUrl"] = request.SitemapUrl;
+        // if (!string.IsNullOrWhiteSpace(request.ContactEmail)) metadata["ContactEmail"] = request.ContactEmail;
+        if (!string.IsNullOrWhiteSpace(request.YourName)) metadata["YourName"] = request.YourName;
+        if (!string.IsNullOrWhiteSpace(request.Pricing)) metadata["Pricing"] = request.Pricing;
+        if (!string.IsNullOrWhiteSpace(request.NewsletterOptIn)) metadata["NewsletterOptIn"] = request.NewsletterOptIn;
+        if (!string.IsNullOrWhiteSpace(request.PreLaunchUrl)) metadata["PreLaunchUrl"] = request.PreLaunchUrl;
+        if (!string.IsNullOrWhiteSpace(request.LaunchpadUrl)) metadata["LaunchpadUrl"] = request.LaunchpadUrl;
+        if (!string.IsNullOrWhiteSpace(request.LaunchpadId)) metadata["LaunchpadId"] = request.LaunchpadId;
+        if (!string.IsNullOrWhiteSpace(request.Creators)) metadata["Creators"] = request.Creators;
+        if (!string.IsNullOrWhiteSpace(request.ProductImages)) metadata["ProductImages"] = request.ProductImages;
+        if (!string.IsNullOrWhiteSpace(request.EnablePreLaunchPreview)) metadata["EnablePreLaunchPreview"] = request.EnablePreLaunchPreview;
+        if (!string.IsNullOrWhiteSpace(request.CreateFirstComment)) metadata["CreateFirstComment"] = request.CreateFirstComment;
         
         var payloadJson = JsonSerializer.Serialize(metadata);
 

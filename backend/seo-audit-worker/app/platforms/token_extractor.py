@@ -26,7 +26,13 @@ class TokenExtractor:
                 continue
             try:
                 if await locator.first.is_visible():
-                    return (await locator.first.text_content() or "").strip()
+                    value = await locator.first.evaluate(
+                        """(el) => {
+                            if ('value' in el) return el.value || '';
+                            return el.innerText || el.textContent || '';
+                        }"""
+                    )
+                    return (value or "").strip()
             except Exception:
                 continue
         return ""

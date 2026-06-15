@@ -21,10 +21,28 @@ public class CreateSubmitJobRequest
 
     // Meta-data tùy chọn
     public string? SiteName { get; set; }
+    public string? Tagline { get; set; }
     public string? Description { get; set; }
+    public string? ProductDescription { get; set; }
     public string? Keywords { get; set; }
+    public string? Categories { get; set; }
+    public string? Category { get; set; }
+    public string? Stacks { get; set; }
+    public string? ProductType { get; set; }
+    public string? LaunchPlan { get; set; }
+    public string? LaunchWeek { get; set; }
     public string? SitemapUrl { get; set; }
     public string? ContactEmail { get; set; }
+    public string? YourName { get; set; }
+    public string? Pricing { get; set; }
+    public string? NewsletterOptIn { get; set; }
+    public string? PreLaunchUrl { get; set; }
+    public string? LaunchpadUrl { get; set; }
+    public string? LaunchpadId { get; set; }
+    public string? Creators { get; set; }
+    public string? ProductImages { get; set; }
+    public string? EnablePreLaunchPreview { get; set; }
+    public string? CreateFirstComment { get; set; }
 }
 
 public class SubmitJobProgressDto
@@ -44,6 +62,7 @@ public class SubmitJobDetailProgressDto
     public string PlatformCode { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string? ErrorMessage { get; set; }
+    public string? ResponseData { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<SubmitAuditLogDto> AuditLogs { get; set; } = new();
 }

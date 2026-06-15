@@ -1,5 +1,7 @@
 from typing import Dict, Any
 from app.engines.submit_platforms.api_platforms.active_search_results import ActiveSearchResultsSubmitHandler
+from app.engines.submit_platforms.browser_platforms.futuretools import FutureToolsSubmitHandler
+from app.engines.submit_platforms.browser_platforms.productburst import ProductBurstSubmitHandler
 from app.engines.submit_platforms.browser_platforms.stackshare import StackShareSubmitHandler
 
 class PlatformSubmitFactory:
@@ -9,7 +11,11 @@ class PlatformSubmitFactory:
         
         if code in ["asr", "active_search_results"]:
             return ActiveSearchResultsSubmitHandler(platform_info, db_repo)
+        elif code == "futuretools":
+            return FutureToolsSubmitHandler(platform_info, db_repo)
         elif code == "stackshare":
             return StackShareSubmitHandler(platform_info, db_repo)
+        elif code == "productburst":
+            return ProductBurstSubmitHandler(platform_info, db_repo)
         else:
             raise ValueError(f"Không hỗ trợ SEO Platform với mã code: {code}")

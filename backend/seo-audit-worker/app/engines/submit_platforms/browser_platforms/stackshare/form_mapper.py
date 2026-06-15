@@ -54,7 +54,57 @@ class StackShareFormMapper:
     async def fill_url(self, page, url: str, browser_helper: BrowserAutomationHelper) -> bool:
         return await browser_helper.fill_first_visible(page, STACKSHARE_WEBSITE_INPUT_SELECTORS, url)
 
+    async def _read_modal_text_fields(self, page) -> list[str]:
+        dialog = page.locator("[role='dialog']")
+        if await dialog.count() == 0:
+            return []
+
+        controls = dialog.locator("input:not([type='hidden']):not([type='file']), textarea")
+        values: list[str] = []
+
+        try:
+            control_count = await controls.count()
+        except Exception:
+            return []
+
+        for index in range(control_count):
+            locator = controls.nth(index)
+            try:
+                if not await locator.is_visible():
+                    continue
+
+                tag_name = await locator.evaluate("(el) => el.tagName.toLowerCase()")
+                if tag_name == "input":
+                    value = await locator.input_value()
+                else:
+                    value = await locator.evaluate(
+                        """(el) => {
+                            if ('value' in el) return el.value || '';
+                            return el.innerText || el.textContent || '';
+                        }"""
+                    )
+
+                values.append((value or "").strip())
+            except Exception:
+                continue
+
+        return values
+
     async def extract_crawled_data(self, page) -> Dict[str, str]:
+        modal_values = await self._read_modal_text_fields(page)
+        if len(modal_values) >= 5:
+            crawled = {
+                "tool_name": modal_values[0] if len(modal_values) > 0 else "",
+                "website_url": modal_values[1] if len(modal_values) > 1 else "",
+                "docs_url": modal_values[2] if len(modal_values) > 2 else "",
+                "description": modal_values[3] if len(modal_values) > 3 else "",
+                "short_description": modal_values[4] if len(modal_values) > 4 else "",
+                "features": modal_values[5] if len(modal_values) > 5 else "",
+                "logo": "",
+            }
+            if any(crawled.values()):
+                return crawled
+
         extractor = TokenExtractor(page)
         return {
             "tool_name": await extractor.extract_input_value(STACKSHARE_TOOL_NAME_SELECTORS),

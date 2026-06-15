@@ -64,7 +64,7 @@ async def connect_stackshare(output_path: Path, timeout_ms: int) -> None:
         print("Nếu modal login chưa hiện, hãy bấm Sign in trên trang chủ.")
         print("Chờ đến khi browser chuyển sang /dashboard.")
 
-        await page.wait_for_url("**/", timeout=timeout_ms)
+        await page.wait_for_url("**/dashboard", timeout=timeout_ms)
 
         # Lưu lại trạng thái phiên
         output_path.parent.mkdir(parents=True, exist_ok=True)

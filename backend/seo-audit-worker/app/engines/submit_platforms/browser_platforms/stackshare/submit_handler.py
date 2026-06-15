@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import asyncio
+import os
 import time
+from pathlib import Path
 from typing import Dict, Any
 
 from playwright.async_api import async_playwright
@@ -56,9 +59,107 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
 
         return None
 
-    async def submit(self, url: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+    async def _detect_bot_access_denied(self, page) -> bool:
+        try:
+            body_text = (await page.locator("body").inner_text(timeout=3000)).strip().lower()
+        except Exception:
+            body_text = ""
+
+        if "bot access denied" in body_text:
+            return True
+
+        try:
+            dialog = page.locator("[role='dialog']")
+            if await dialog.count() > 0:
+                dialog_text = (await dialog.first.inner_text(timeout=3000)).strip().lower()
+                if "bot access denied" in dialog_text:
+                    return True
+        except Exception:
+            pass
+
+        return False
+
+    def _debug_enabled(self) -> bool:
+        return (os.getenv("STACKSHARE_DEBUG_HEADFUL", "") or "").strip().lower() in {"1", "true", "yes", "on"}
+
+    def _debug_slow_mo_ms(self) -> int:
+        raw_value = (os.getenv("STACKSHARE_DEBUG_SLOWMO_MS", "") or "").strip()
+        if not raw_value:
+            return 0
+        try:
+            return max(0, int(raw_value))
+        except ValueError:
+            return 0
+
+    def _debug_artifact_dir(self) -> Path:
+        raw_path = (os.getenv("STACKSHARE_DEBUG_ARTIFACT_DIR", "") or "").strip()
+        if raw_path:
+            return Path(raw_path).expanduser()
+        return Path(__file__).resolve().parents[5] / ".playwright" / "stackshare-debug"
+
+    async def _capture_debug_artifacts(self, page, step: str) -> None:
+        if page is None or not self._debug_enabled():
+            return
+
+        artifact_dir = self._debug_artifact_dir()
+        artifact_dir.mkdir(parents=True, exist_ok=True)
+
+        safe_step = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in step).strip("_") or "step"
+        timestamp = int(time.time() * 1000)
+        prefix = artifact_dir / f"{timestamp}_{safe_step}"
+
+        try:
+            await page.screenshot(path=f"{prefix}.png", full_page=True)
+        except Exception:
+            pass
+
+        try:
+            html = await page.content()
+            (prefix.with_suffix(".html")).write_text(html, encoding="utf-8")
+        except Exception:
+            pass
+
+        title = ""
+        try:
+            title = await page.title()
+        except Exception:
+            title = ""
+
+        try:
+            body_text = (await page.locator("body").inner_text(timeout=3000)).strip()
+        except Exception:
+            body_text = ""
+
+        body_text = body_text[:2000]
+        await self.log_audit(
+            "BrowserDebug",
+            "Running",
+            (
+                f"[{step}] url={page.url} "
+                f"title={title} "
+                f"artifact_prefix={prefix} "
+                f"body={body_text or '[empty]'}"
+            ),
+        )
+
+    def _attach_debug_listeners(self, page) -> None:
+        if not self._debug_enabled() or page is None:
+            return
+
+        page.on("console", lambda msg: print(f"[StackShare:console:{msg.type}] {msg.text}"))
+        page.on("pageerror", lambda exc: print(f"[StackShare:pageerror] {exc}"))
+        page.on("requestfailed", lambda req: print(f"[StackShare:requestfailed] {req.method} {req.url}"))
+
+        def _handle_dialog(dialog) -> None:
+            print(f"[StackShare:dialog] {dialog.type}: {dialog.message}")
+            asyncio.create_task(dialog.dismiss())
+
+        page.on("dialog", _handle_dialog)
+
+    async def submit(self, url: str, metadata: Dict[str, Any], mode: str = "final") -> Dict[str, Any]:
         start_time = time.time()
         retry_helper = RetryTimeoutHandler(retries=2, delay_seconds=1.0, timeout_seconds=15.0)
+        debug_enabled = self._debug_enabled()
 
         await self.log_audit(
             "BrowserLaunch",
@@ -68,7 +169,8 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(
-                headless=True,
+                headless=not debug_enabled,
+                slow_mo=self._debug_slow_mo_ms() or None,
                 args=["--disable-blink-features=AutomationControlled"]
             )
             browser_helper = BrowserAutomationHelper(browser)
@@ -78,6 +180,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
             try:
                 context = await self.create_authenticated_context(browser)
                 page = await context.new_page()
+                self._attach_debug_listeners(page)
 
                 await self.log_audit(
                     "NavigateSubmit",
@@ -89,6 +192,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                 except Exception:
                     await page.goto(STACKSHARE_SUBMIT_URL, wait_until="load", timeout=30000)
                 await page.wait_for_timeout(1000)
+                await self._capture_debug_artifacts(page, "after-goto")
 
                 await self.log_audit(
                     "OpenListTool",
@@ -101,6 +205,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                 )
 
                 await page.wait_for_timeout(1000)
+                await self._capture_debug_artifacts(page, "after-open-list-tool")
 
                 logo_file_path = self.logo_uploader.resolve_logo_file_path(metadata)
                 defaults = self.form_mapper.build_defaults(metadata, url, logo_file_path)
@@ -150,11 +255,13 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                             f"{err_msg}"
                         )
                     )
+                    await self._capture_debug_artifacts(page, "cooldown-detected")
                     return {
                         "success": False,
                         "response_data": None,
                         "error_message": err_msg
                     }
+                await self._capture_debug_artifacts(page, "after-crawl-or-cooldown")
 
                 crawled_raw = await self.form_mapper.extract_crawled_data(page)
                 crawled = self.form_mapper.normalize_crawled_data(crawled_raw, defaults)
@@ -162,8 +269,24 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                 await self.log_audit(
                     "CrawlPreview",
                     "Success",
-                    self.result_parser.format_crawl_preview(crawled)
+                    self.result_parser.format_crawl_preview(crawled_raw)
                 )
+
+                if mode.lower() == "preview":
+                    await self.log_audit(
+                        "UserReview",
+                        "Running",
+                        "Đã crawl xong dữ liệu StackShare. Chờ client review và chỉnh sửa trước khi submit."
+                    )
+                    return {
+                        "success": True,
+                        "requires_manual_action": True,
+                        "response_data": self.result_parser.build_preview_payload(
+                            crawled_raw.get("tool_name", ""),
+                            crawled_raw
+                        ),
+                        "error_message": None
+                    }
 
                 await self.log_audit(
                     "FillForm",
@@ -171,6 +294,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                     "Đang đồng bộ dữ liệu crawl vào form trước khi submit..."
                 )
                 await self.form_mapper.apply_form(page, browser_helper, crawled)
+                await self._capture_debug_artifacts(page, "after-fill-form")
 
                 uploaded_logo = await self.logo_uploader.upload(page, metadata)
                 if uploaded_logo:
@@ -200,6 +324,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                             f"{err_msg}"
                         )
                     )
+                    await self._capture_debug_artifacts(page, "cooldown-before-submit")
                     return {
                         "success": False,
                         "response_data": None,
@@ -218,6 +343,20 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                     "Running",
                     "Đã bấm Submit. Đang chờ StackShare xác nhận kết quả thực tế..."
                 )
+                await self._capture_debug_artifacts(page, "after-submit-click")
+
+                if await self._detect_bot_access_denied(page):
+                    err_msg = (
+                        "StackShare trả về 'Bot access denied' sau khi bấm Submit. "
+                        "Đây là chặn từ phía website, không phải lỗi Playwright."
+                    )
+                    await self.log_audit("Submit", "Failed", err_msg)
+                    await self._capture_debug_artifacts(page, "bot-access-denied")
+                    return {
+                        "success": False,
+                        "response_data": None,
+                        "error_message": err_msg,
+                    }
 
                 submission_confirmation = await self._wait_for_submission_confirmation(page, timeout_ms=12000)
                 if not submission_confirmation:
@@ -230,6 +369,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                         "Failed",
                         err_msg
                     )
+                    await self._capture_debug_artifacts(page, "submit-no-confirmation")
                     return {
                         "success": False,
                         "response_data": None,
@@ -257,6 +397,11 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                 duration = int((time.time() - start_time) * 1000)
                 err_msg = f"Lỗi trong quá trình thao tác giao diện tự động trên StackShare: {str(e)}"
                 await self.log_audit("NavigateSubmit", "Failed", err_msg, duration)
+                try:
+                    if 'page' in locals() and page is not None:
+                        await self._capture_debug_artifacts(page, "exception")
+                except Exception:
+                    pass
                 return {
                     "success": False,
                     "response_data": None,

@@ -17,5 +17,5 @@ class BaseBrowserSubmitHandler(BaseSubmitHandler):
         return await strategy.ensure_authenticated(browser)
 
     @abstractmethod
-    async def submit(self, url, metadata):
+    async def submit(self, url, metadata, mode: str = "final"):
         raise NotImplementedError

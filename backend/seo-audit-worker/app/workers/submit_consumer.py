@@ -11,6 +11,7 @@ async def process_submit_job(message):
     website_url = message["WebsiteUrl"]
     payload_str = message.get("Payload") or "{}"
     platforms = message.get("Platforms") or []
+    mode = message.get("Mode") or "final"
 
     try:
         metadata = json.loads(payload_str)
@@ -38,7 +39,7 @@ async def process_submit_job(message):
                 handler = PlatformSubmitFactory.get_submit_handler(platform_info, db_repo)
                 at_least_one_processed = True
                 
-                result = await handler.submit(website_url, metadata)
+                result = await handler.submit(website_url, metadata, mode=mode)
                 
                 if result.get("success"):
                     await db_repo.update_submit_job_detail_status(

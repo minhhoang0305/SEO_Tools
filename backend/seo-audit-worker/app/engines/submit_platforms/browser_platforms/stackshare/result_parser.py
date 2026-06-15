@@ -26,6 +26,16 @@ class StackShareResultParser:
             ensure_ascii=False,
         )
 
+    def build_preview_payload(self, tool_name: str, crawled: Dict[str, str]) -> str:
+        return json.dumps(
+            {
+                "message": f"StackShare đã crawl dữ liệu cho '{tool_name}'. Hãy review và chỉnh sửa trước khi submit.",
+                "requires_manual_action": True,
+                "crawled_data": crawled,
+            },
+            ensure_ascii=False,
+        )
+
     def build_submission_pending_payload(self, tool_name: str, details: Optional[str] = None) -> str:
         payload = {
             "message": f"Đã bấm Submit cho '{tool_name}', nhưng chưa xác nhận được trạng thái thành công từ StackShare.",

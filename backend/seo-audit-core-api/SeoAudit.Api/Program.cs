@@ -11,6 +11,7 @@ using SeoAudit.Application.Features;
 using SeoAudit.Application.Interfaces;
 using SeoAudit.Application.Options;
 using SeoAudit.Domain.Interfaces;
+using SeoAudit.Domain.Entities;
 using SeoAudit.Infrastructure.Messaging;
 using SeoAudit.Infrastructure.Persistence.Data;
 using SeoAudit.Infrastructure.Repositories;
@@ -151,6 +152,41 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    var seedPlatforms = new[]
+    {
+        new SeoPlatform
+        {
+            Id = Guid.Parse("c7f7d0b8-5d3c-4a56-9c69-9f2bf2e6d911"),
+            Name = "ProductBurst",
+            Code = "productburst",
+            WebsiteUrl = "https://productburst.com",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        },
+        new SeoPlatform
+        {
+            Id = Guid.Parse("d4f0d2a4-0f33-4a71-9f54-8e6c5a3b4a55"),
+            Name = "Future Tools",
+            Code = "futuretools",
+            WebsiteUrl = "https://futuretools.io/submit-a-tool",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        }
+    };
+
+    foreach (var seedPlatform in seedPlatforms)
+    {
+        var exists = await db.SeoPlatforms.AnyAsync(p => p.Code == seedPlatform.Code);
+        if (!exists)
+        {
+            db.SeoPlatforms.Add(seedPlatform);
+        }
+    }
+
+    await db.SaveChangesAsync();
 }
 
 app.UseHttpsRedirection();
