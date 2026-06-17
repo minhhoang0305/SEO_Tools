@@ -4,6 +4,7 @@ import asyncio
 import os
 import time
 from pathlib import Path
+from shutil import which
 from typing import Dict, Any
 
 from playwright.async_api import async_playwright
@@ -97,6 +98,25 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
             return Path(raw_path).expanduser()
         return Path(__file__).resolve().parents[5] / ".playwright" / "stackshare-debug"
 
+    def _chrome_executable_path(self) -> str | None:
+        raw_value = (os.getenv("STACKSHARE_CHROME_EXECUTABLE_PATH", "") or "").strip()
+        if raw_value and Path(raw_value).expanduser().exists():
+            return raw_value
+        candidates = [
+            Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+            Path.home() / "Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            Path("/Applications/Chromium.app/Contents/MacOS/Chromium"),
+            Path.home() / "Applications/Chromium.app/Contents/MacOS/Chromium",
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                return str(candidate)
+        for binary in ("google-chrome", "google-chrome-stable", "chrome", "chromium", "chromium-browser"):
+            found = which(binary)
+            if found and Path(found).exists():
+                return found
+        return None
+
     async def _capture_debug_artifacts(self, page, step: str) -> None:
         if page is None or not self._debug_enabled():
             return
@@ -168,11 +188,18 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
         )
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=not debug_enabled,
-                slow_mo=self._debug_slow_mo_ms() or None,
-                args=["--disable-blink-features=AutomationControlled"]
-            )
+            launch_kwargs = {
+                "headless": not debug_enabled,
+                "slow_mo": self._debug_slow_mo_ms() or None,
+                "args": ["--disable-blink-features=AutomationControlled"],
+            }
+            chrome_path = self._chrome_executable_path()
+            if chrome_path:
+                launch_kwargs["executable_path"] = chrome_path
+            else:
+                launch_kwargs["channel"] = "chrome"
+
+            browser = await p.chromium.launch(**launch_kwargs)
             browser_helper = BrowserAutomationHelper(browser)
             self.form_mapper.bind_browser_helper(browser_helper)
 

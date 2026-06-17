@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import re
 import time
+import os
+from pathlib import Path
+from shutil import which
 from typing import Any, Dict
 
 from playwright.async_api import async_playwright
@@ -30,6 +33,24 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
         self.form_mapper = ProductBurstFormMapper(self)
         self.result_parser = ProductBurstResultParser()
 
+    def _debug_enabled(self) -> bool:
+        return (os.getenv("PRODUCTBURST_DEBUG_HEADFUL", "") or "").strip().lower() in {"1", "true", "yes", "on"}
+
+    def _debug_slow_mo_ms(self) -> int:
+        raw_value = (os.getenv("PRODUCTBURST_DEBUG_SLOWMO_MS", "") or "").strip()
+        if not raw_value:
+            return 0
+        try:
+            return max(0, int(raw_value))
+        except ValueError:
+            return 0
+
+    def _debug_artifact_dir(self) -> Path:
+        raw_path = (os.getenv("PRODUCTBURST_DEBUG_ARTIFACT_DIR", "") or "").strip()
+        if raw_path:
+            return Path(raw_path).expanduser()
+        return Path(__file__).resolve().parents[5] / ".playwright" / "productburst-debug"
+
     async def _wait_for_launchpad_url(self, page, timeout_ms: int = 15000) -> str:
         deadline = time.time() + (timeout_ms / 1000.0)
         while time.time() < deadline:
@@ -54,6 +75,47 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
     def _resolve_launch_plan(self, metadata: Dict[str, Any]) -> str:
         return (metadata.get("LaunchPlan") or metadata.get("ProductType") or "Launch").strip()
 
+    def _chrome_executable_path(self) -> str | None:
+        raw_value = (os.getenv("PRODUCTBURST_CHROME_EXECUTABLE_PATH", "") or "").strip()
+        if raw_value and Path(raw_value).expanduser().exists():
+            return raw_value
+        candidates = [
+            Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+            Path.home() / "Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            Path("/Applications/Chromium.app/Contents/MacOS/Chromium"),
+            Path.home() / "Applications/Chromium.app/Contents/MacOS/Chromium",
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                return str(candidate)
+        for binary in ("google-chrome", "google-chrome-stable", "chrome", "chromium", "chromium-browser"):
+            found = which(binary)
+            if found and Path(found).exists():
+                return found
+        return None
+
+    async def _capture_debug_artifacts(self, page, step: str) -> None:
+        if page is None or not self._debug_enabled():
+            return
+
+        artifact_dir = self._debug_artifact_dir()
+        artifact_dir.mkdir(parents=True, exist_ok=True)
+
+        safe_step = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in step).strip("_") or "step"
+        timestamp = int(time.time() * 1000)
+        prefix = artifact_dir / f"{timestamp}_{safe_step}"
+
+        try:
+            await page.screenshot(path=f"{prefix}.png", full_page=True)
+        except Exception:
+            pass
+
+        try:
+            html = await page.content()
+            (prefix.with_suffix(".html")).write_text(html, encoding="utf-8")
+        except Exception:
+            pass
+
     async def submit(self, url: str, metadata: Dict[str, Any], mode: str = "final") -> Dict[str, Any]:
         start_time = time.time()
         retry_helper = RetryTimeoutHandler(retries=2, delay_seconds=1.0, timeout_seconds=20.0)
@@ -65,10 +127,18 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
         )
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=True,
-                args=["--disable-blink-features=AutomationControlled"],
-            )
+            launch_kwargs = {
+                "headless": not self._debug_enabled(),
+                "slow_mo": self._debug_slow_mo_ms() or None,
+                "args": ["--disable-blink-features=AutomationControlled"],
+            }
+            chrome_path = self._chrome_executable_path()
+            if chrome_path:
+                launch_kwargs["executable_path"] = chrome_path
+            else:
+                launch_kwargs["channel"] = "chrome"
+
+            browser = await p.chromium.launch(**launch_kwargs)
             browser_helper = BrowserAutomationHelper(browser)
             self.form_mapper.bind_browser_helper(browser_helper)
 
@@ -88,6 +158,7 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
                     await page.goto(PRODUCTBURST_PRE_LAUNCH_URL, wait_until="load", timeout=30000)
 
                 await page.wait_for_timeout(1000)
+                await self._capture_debug_artifacts(page, "after-goto")
 
                 defaults = self.form_mapper.build_defaults(metadata, url)
                 extracted = await self.form_mapper.extract_form_data(page)
@@ -100,6 +171,7 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
                 )
 
                 if mode.lower() == "preview":
+                    await self._capture_debug_artifacts(page, "preview-mode")
                     return {
                         "success": True,
                         "requires_manual_action": True,
@@ -113,6 +185,7 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
                     "Đang đổ dữ liệu page 2 vào ProductBurst..."
                 )
                 await self.form_mapper.fill_prelaunch_form(page, browser_helper, collected)
+                await self._capture_debug_artifacts(page, "after-fill")
 
                 selected_plan = self._resolve_launch_plan(metadata)
                 if selected_plan:
@@ -148,6 +221,7 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
                     "Running",
                     "Đã bấm Launch. Đang chờ ProductBurst tạo launchpad URL..."
                 )
+                await self._capture_debug_artifacts(page, "after-launch")
 
                 await page.wait_for_timeout(1000)
                 final_url = await self._wait_for_launchpad_url(page, timeout_ms=20000)
@@ -196,4 +270,3 @@ class ProductBurstSubmitHandler(BaseBrowserSubmitHandler):
                 if context is not None:
                     await context.close()
                 await browser.close()
-

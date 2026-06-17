@@ -157,6 +157,26 @@ using (var scope = app.Services.CreateScope())
     {
         new SeoPlatform
         {
+            Id = Guid.Parse("d0a1b2c3-4d5e-4f60-8a71-9b0c1d2e3f40"),
+            Name = "10words",
+            Code = "10words",
+            WebsiteUrl = "https://portal.10words.io/submissions",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        },
+        new SeoPlatform
+        {
+            Id = Guid.Parse("b5a7c0d1-4e5f-4d25-9a2f-8b4b1c6d7e8f"),
+            Name = "BAI.tools",
+            Code = "baitools",
+            WebsiteUrl = "https://bai.tools/submit-ai-tools",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        },
+        new SeoPlatform
+        {
             Id = Guid.Parse("c7f7d0b8-5d3c-4a56-9c69-9f2bf2e6d911"),
             Name = "ProductBurst",
             Code = "productburst",
@@ -171,6 +191,16 @@ using (var scope = app.Services.CreateScope())
             Name = "Future Tools",
             Code = "futuretools",
             WebsiteUrl = "https://futuretools.io/submit-a-tool",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        },
+        new SeoPlatform
+        {
+            Id = Guid.Parse("a3b4c5d6-7e8f-4012-9abc-3d4e5f607182"),
+            Name = "Alternative",
+            Code = "alternative",
+            WebsiteUrl = "https://alternative.me/software-submission",
             SubmitMethod = "UI_Automation",
             IsActive = true,
             CreatedAt = DateTime.UtcNow

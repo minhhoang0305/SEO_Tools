@@ -36,6 +36,26 @@ public class CreateSubmitJobRequest
     public string? YourName { get; set; }
     public string? Pricing { get; set; }
     public string? NewsletterOptIn { get; set; }
+    public string? TwitterHandle { get; set; }
+    public string? TenWordsCategory { get; set; }
+    public string? TenWordsNewsletter { get; set; }
+    public bool? BAIToolsUseApi { get; set; }
+    public int? BAIToolsPlanIndex { get; set; }
+    public string? BAIToolsLocale { get; set; }
+    public string? FullDescription { get; set; }
+    public string? IconPath { get; set; }
+    public string? HomepageUrl { get; set; }
+    public string? PricingUrl { get; set; }
+    public string? Type { get; set; }
+    public string? Monetization { get; set; }
+    public string? Status { get; set; }
+    public string? Platforms { get; set; }
+    public string? Features { get; set; }
+    public string? SocialLinks { get; set; }
+    public string? AlternativeSocialLinkType { get; set; }
+    public string? AlternativePricingName { get; set; }
+    public string? AlternativePricingCost { get; set; }
+    public string? Synonyms { get; set; }
     public string? PreLaunchUrl { get; set; }
     public string? LaunchpadUrl { get; set; }
     public string? LaunchpadId { get; set; }

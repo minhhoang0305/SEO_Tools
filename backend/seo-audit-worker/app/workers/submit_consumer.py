@@ -1,10 +1,25 @@
 import json
+import os
 import asyncio
 import aio_pika
 import uuid
 from app.core.config import RABBITMQ_HOST, DATABASE_URL
 from app.repositories.postgres_repository import PostgresRepository
 from app.engines.submit_platforms.factory import PlatformSubmitFactory
+
+def _debug_enabled() -> bool:
+    return (os.getenv("SUBMIT_WORKER_DEBUG", "") or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _debug_print(title: str, payload):
+    if not _debug_enabled():
+        return
+    print(f"\n[SubmitWorkerDebug] {title}:")
+    if isinstance(payload, (dict, list)):
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print(payload)
+
 
 async def process_submit_job(message):
     job_id = message["JobId"]
@@ -13,10 +28,24 @@ async def process_submit_job(message):
     platforms = message.get("Platforms") or []
     mode = message.get("Mode") or "final"
 
+    _debug_print("RawMessage", message)
+    _debug_print(
+        "ParsedJob",
+        {
+            "JobId": job_id,
+            "WebsiteUrl": website_url,
+            "Mode": mode,
+            "PlatformCount": len(platforms),
+        },
+    )
+
     try:
         metadata = json.loads(payload_str)
     except Exception:
         metadata = {}
+
+    _debug_print("PayloadString", payload_str)
+    _debug_print("ParsedMetadata", metadata)
 
     print(f"\nProcessing Submit Job: {job_id} for URL: {website_url}")
 
@@ -32,14 +61,26 @@ async def process_submit_job(message):
             platform_code = platform_info["PlatformCode"]
             
             print(f"-> Submit lên Platform: {platform_code} (Detail ID: {detail_id})")
+            _debug_print(
+                "PlatformInfo",
+                {
+                    "JobDetailId": detail_id,
+                    "PlatformCode": platform_code,
+                    "PlatformId": platform_info.get("PlatformId"),
+                    "HasEncryptedCredential": bool(platform_info.get("EncryptedCredential")),
+                    "HasIV": bool(platform_info.get("IV")),
+                },
+            )
             
             await db_repo.update_submit_job_detail_status(detail_id, "Running")
             
             try:
                 handler = PlatformSubmitFactory.get_submit_handler(platform_info, db_repo)
+                _debug_print("Handler", handler.__class__.__name__)
                 at_least_one_processed = True
                 
                 result = await handler.submit(website_url, metadata, mode=mode)
+                _debug_print("SubmitResult", result)
                 
                 if result.get("success"):
                     await db_repo.update_submit_job_detail_status(
@@ -59,6 +100,7 @@ async def process_submit_job(message):
                 all_success = False
                 err_msg = f"Lỗi không mong muốn khi xử lý submit handler: {str(ex)}"
                 print(err_msg)
+                _debug_print("HandlerException", err_msg)
                 await db_repo.update_submit_job_detail_status(detail_id, "Failed", error_message=err_msg)
                 await db_repo.save_submit_audit_log(detail_id, "SystemCrash", "Failed", err_msg)
 
@@ -68,6 +110,7 @@ async def process_submit_job(message):
             
         await db_repo.update_submit_job_status(job_id, final_job_status)
         print(f"Finished Submit Job {job_id}. Final Status: {final_job_status}")
+        _debug_print("FinalJobStatus", {"JobId": job_id, "FinalStatus": final_job_status})
 
 
 async def run_submit_consumer():

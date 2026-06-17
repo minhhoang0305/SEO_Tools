@@ -59,7 +59,7 @@ class FutureToolsSubmitHandler(BaseBrowserSubmitHandler):
 
     def _chrome_executable_path(self) -> str | None:
         raw_value = (os.getenv("FUTURETOOLS_CHROME_EXECUTABLE_PATH", "") or "").strip()
-        if raw_value:
+        if raw_value and Path(raw_value).expanduser().exists():
             return raw_value
 
         candidates = [
@@ -74,7 +74,7 @@ class FutureToolsSubmitHandler(BaseBrowserSubmitHandler):
 
         for binary in ("google-chrome", "google-chrome-stable", "chrome", "chromium", "chromium-browser"):
             found = which(binary)
-            if found:
+            if found and Path(found).exists():
                 return found
 
         return None

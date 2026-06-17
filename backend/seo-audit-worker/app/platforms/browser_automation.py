@@ -40,6 +40,7 @@ class BrowserAutomationHelper:
 
             target = locator.first
             try:
+                await target.scroll_into_view_if_needed(timeout=2000)
                 if await target.is_visible():
                     await target.fill(value)
                     return True
@@ -74,6 +75,7 @@ class BrowserAutomationHelper:
 
             target = locator.first
             try:
+                await target.scroll_into_view_if_needed(timeout=2000)
                 if await target.is_visible():
                     await target.click()
                     return True

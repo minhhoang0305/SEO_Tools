@@ -21,9 +21,43 @@ export default function SubmitWebsite() {
   const [sitemapUrl, setSitemapUrl] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [submitterName, setSubmitterName] = useState('');
+  const [tenWordsTwitterHandle, setTenWordsTwitterHandle] = useState('');
+  const [tenWordsCategory, setTenWordsCategory] = useState('Website');
+  const [tenWordsNewsletter, setTenWordsNewsletter] = useState('No thanks');
   const [futureToolsCategory, setFutureToolsCategory] = useState('Productivity');
   const [futureToolsPricing, setFutureToolsPricing] = useState('Free');
   const [futureToolsNewsletterOptIn, setFutureToolsNewsletterOptIn] = useState(false);
+  const [alternativeCategory, setAlternativeCategory] = useState('software/web/tools');
+  const [alternativeFullDescription, setAlternativeFullDescription] = useState('');
+  const [alternativePricingUrl, setAlternativePricingUrl] = useState('');
+  const [alternativeType, setAlternativeType] = useState('online');
+  const [alternativeMonetization, setAlternativeMonetization] = useState('free');
+  const [alternativeStatus, setAlternativeStatus] = useState('live');
+  const [alternativePlatforms, setAlternativePlatforms] = useState('');
+  const [alternativeFeatures, setAlternativeFeatures] = useState('');
+  const [alternativeSocialLinks, setAlternativeSocialLinks] = useState('');
+  const [alternativeSocialLinkUrl, setAlternativeSocialLinkUrl] = useState('');
+  const [alternativeSocialLinkType, setAlternativeSocialLinkType] = useState('twitter');
+  const [alternativePricingName, setAlternativePricingName] = useState('');
+  const [alternativePricingCost, setAlternativePricingCost] = useState('');
+  const [alternativeSynonyms, setAlternativeSynonyms] = useState('');
+  const [alternativeTestSoftwareName, setAlternativeTestSoftwareName] = useState('');
+  const [alternativeTestHomepageUrl, setAlternativeTestHomepageUrl] = useState('');
+  const [alternativeTestShortDescription, setAlternativeTestShortDescription] = useState('');
+  const [alternativeTestFullDescription, setAlternativeTestFullDescription] = useState('');
+  const [alternativeIconPath, setAlternativeIconPath] = useState('/Users/nolanpham/Documents/SEO_Tools/backend/seo-audit-worker/.playwright/alternative-icon.png');
+  const [alternativeTestCategory, setAlternativeTestCategory] = useState('software/web/tools');
+  const [alternativeTestPricingUrl, setAlternativeTestPricingUrl] = useState('');
+  const [alternativeTestType, setAlternativeTestType] = useState('online');
+  const [alternativeTestMonetization, setAlternativeTestMonetization] = useState('free');
+  const [alternativeTestStatus, setAlternativeTestStatus] = useState('live');
+  const [alternativeTestPlatforms, setAlternativeTestPlatforms] = useState('');
+  const [alternativeTestFeatures, setAlternativeTestFeatures] = useState('');
+  const [alternativeTestSocialLinkType, setAlternativeTestSocialLinkType] = useState('twitter');
+  const [alternativeTestSocialLinkUrl, setAlternativeTestSocialLinkUrl] = useState('');
+  const [alternativeTestPricingName, setAlternativeTestPricingName] = useState('');
+  const [alternativeTestPricingCost, setAlternativeTestPricingCost] = useState('');
+  const [alternativeTestSynonyms, setAlternativeTestSynonyms] = useState('');
   
   // Dashboard platform selection & filtering
   const [platforms, setPlatforms] = useState([]);
@@ -75,7 +109,7 @@ export default function SubmitWebsite() {
       const data = await response.json();
       setPlatforms(data);
       
-      const preferredCodes = ['futuretools', 'productburst', 'stackshare'];
+      const preferredCodes = ['10words', 'baitools', 'alternative', 'futuretools', 'productburst', 'stackshare'];
       const preferredPlatform = preferredCodes
         .map((code) => data.find((platform) => platform.code?.toLowerCase() === code))
         .find(Boolean);
@@ -186,6 +220,90 @@ export default function SubmitWebsite() {
     }
   };
 
+  const fillAlternativeTestSample = () => {
+    setSiteName(alternativeTestSoftwareName);
+    setUrl(alternativeTestHomepageUrl);
+    setDescription(alternativeTestShortDescription);
+    setAlternativeFullDescription(alternativeTestFullDescription);
+    setAlternativeCategory(alternativeTestCategory);
+    setAlternativePricingUrl(alternativeTestPricingUrl);
+    setAlternativeType(alternativeTestType);
+    setAlternativeMonetization(alternativeTestMonetization);
+    setAlternativeStatus(alternativeTestStatus);
+    setAlternativePlatforms(alternativeTestPlatforms);
+    setAlternativeFeatures(alternativeTestFeatures);
+    setAlternativeSocialLinkType(alternativeTestSocialLinkType);
+    setAlternativeSocialLinks(alternativeTestSocialLinkUrl);
+    setAlternativePricingName(alternativeTestPricingName);
+    setAlternativePricingCost(alternativeTestPricingCost);
+    setAlternativeSynonyms(alternativeTestSynonyms);
+    setAlternativeIconPath('/Users/nolanpham/Documents/SEO_Tools/backend/seo-audit-worker/.playwright/alternative-icon.png');
+  };
+
+  const fillAlternativeFullSample = () => {
+    setAlternativeTestSoftwareName('Langflow');
+    setAlternativeTestHomepageUrl('https://www.langflow.org');
+    setAlternativeTestShortDescription(
+      'Build and run LLM workflows with a visual builder for AI apps and automation. It supports reusable components, debugging, and team collaboration for production use.'
+    );
+    setAlternativeTestFullDescription(
+      'Langflow is a low-code platform for designing, testing, and deploying LLM workflows with reusable components, integrations, and API support. It helps teams prototype faster, connect multiple models and tools, and move from experiments to production with a more structured workflow builder.'
+    );
+    setAlternativeTestCategory('software/web/tools');
+    setAlternativeTestPricingUrl('https://www.langflow.org/pricing');
+    setAlternativeTestType('online');
+    setAlternativeTestMonetization('free');
+    setAlternativeTestStatus('live');
+    setAlternativeTestPlatforms('OpenAI, LangChain, Zapier');
+    setAlternativeTestFeatures('visual builder, LLM workflows, reusable components, automation, API');
+    setAlternativeTestSocialLinkType('twitter');
+    setAlternativeTestSocialLinkUrl('https://x.com/langflow');
+    setAlternativeTestPricingName('Pro');
+    setAlternativeTestPricingCost('29');
+    setAlternativeTestSynonyms('Lang Flow, Langflow AI');
+    setAlternativeIconPath('/Users/nolanpham/Documents/SEO_Tools/backend/seo-audit-worker/.playwright/alternative-icon.png');
+
+    setSiteName('Langflow');
+    setUrl('https://www.langflow.org');
+    setDescription(
+      'Build and run LLM workflows with a visual builder for AI apps and automation. It supports reusable components, debugging, and team collaboration for production use.'
+    );
+    setAlternativeFullDescription(
+      'Langflow is a low-code platform for designing, testing, and deploying LLM workflows with reusable components, integrations, and API support. It helps teams prototype faster, connect multiple models and tools, and move from experiments to production with a more structured workflow builder.'
+    );
+    setAlternativeCategory('software/web/tools');
+    setAlternativePricingUrl('https://www.langflow.org/pricing');
+    setAlternativeType('online');
+    setAlternativeMonetization('free');
+    setAlternativeStatus('live');
+    setAlternativePlatforms('OpenAI, LangChain, Zapier');
+    setAlternativeFeatures('visual builder, LLM workflows, reusable components, automation, API');
+    setAlternativeSocialLinkType('twitter');
+    setAlternativeSocialLinks('https://x.com/langflow');
+    setAlternativePricingName('Pro');
+    setAlternativePricingCost('29');
+    setAlternativeSynonyms('Lang Flow, Langflow AI');
+    setAlternativeIconPath('/Users/nolanpham/Documents/SEO_Tools/backend/seo-audit-worker/.playwright/alternative-icon.png');
+  };
+
+  const fillTenWordsQuickSample = () => {
+    setSiteName('SEO TOOLS');
+    setUrl('https://example.com');
+    setDescription('A modern SEO toolkit for audits, crawling, and automated platform submission.');
+    setTenWordsTwitterHandle('@seotools');
+    setTenWordsCategory('Website');
+    setTenWordsNewsletter('No thanks');
+  };
+
+  const fillTenWordsDemoSample = () => {
+    setSiteName('Langflow');
+    setUrl('https://www.langflow.org');
+    setDescription('Build and run LLM workflows with a visual builder for AI apps and automation.');
+    setTenWordsTwitterHandle('@langflow');
+    setTenWordsCategory('SaaS');
+    setTenWordsNewsletter('Weekly');
+  };
+
   // Submit website job
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -202,8 +320,23 @@ export default function SubmitWebsite() {
     }
 
     const currentPlatform = platforms.find(p => p.id === selectedPlatformId);
+    const isTenWords = currentPlatform?.code?.toLowerCase() === '10words';
+    const isBAI = currentPlatform?.code?.toLowerCase() === 'baitools';
     const isASR = currentPlatform?.code?.toLowerCase() === 'asr' || currentPlatform?.code?.toLowerCase() === 'active_search_results';
     const isFutureTools = currentPlatform?.code?.toLowerCase() === 'futuretools';
+    const isAlternative = currentPlatform?.code?.toLowerCase() === 'alternative';
+
+    if (isTenWords) {
+      if (!siteName) return setSubmitError('Vui lòng nhập Project Name cho 10words.');
+      if (!url) return setSubmitError('Vui lòng nhập Project URL cho 10words.');
+      if (!description) return setSubmitError('Vui lòng nhập Description cho 10words.');
+      if (!tenWordsCategory) return setSubmitError('Vui lòng chọn Category cho 10words.');
+    }
+
+    if (isBAI) {
+      if (!siteName) return setSubmitError('Vui lòng nhập AI Tool Name cho BAI.tools.');
+      if (!url) return setSubmitError('Vui lòng nhập Website URL cho BAI.tools.');
+    }
     
     if (isASR && !contactEmail) {
       return setSubmitError('Vui lòng nhập Contact Email cho Active Search Results.');
@@ -216,6 +349,14 @@ export default function SubmitWebsite() {
       if (!contactEmail) return setSubmitError('Vui lòng nhập Your Email cho Future Tools.');
     }
 
+    if (isAlternative) {
+      if (!siteName) return setSubmitError('Vui lòng nhập Software Name cho Alternative.');
+      if (!url) return setSubmitError('Vui lòng nhập Homepage URL cho Alternative.');
+      if (!description) return setSubmitError('Vui lòng nhập Short Description cho Alternative.');
+      if (!alternativeCategory) return setSubmitError('Vui lòng chọn Category cho Alternative.');
+      if (!alternativeIconPath) return setSubmitError('Vui lòng nhập Icon Path cho Alternative.');
+    }
+
     // Open confirmation dialog
     setShowConfirmDialog(true);
   };
@@ -226,6 +367,10 @@ export default function SubmitWebsite() {
     setSubmitError('');
     
     try {
+      const currentPlatform = platforms.find(p => p.id === selectedPlatformId);
+      const isTenWords = currentPlatform?.code?.toLowerCase() === '10words';
+      const isBAI = currentPlatform?.code?.toLowerCase() === 'baitools';
+      const isAlternative = currentPlatform?.code?.toLowerCase() === 'alternative';
       const idToken = await currentUser.getIdToken();
       const response = await fetch(`${API_BASE_URL}/api/submit/jobs`, {
         method: 'POST',
@@ -241,7 +386,33 @@ export default function SubmitWebsite() {
           sitemapUrl: sitemapUrl || undefined,
           contactEmail: contactEmail || undefined,
           yourName: submitterName || undefined,
-          category: futureToolsCategory || undefined,
+          category: isTenWords
+            ? tenWordsCategory || undefined
+            : isAlternative
+              ? alternativeCategory || undefined
+              : isBAI
+                ? 'Website'
+                : futureToolsCategory || undefined,
+          tenWordsCategory: isTenWords ? tenWordsCategory || undefined : undefined,
+          BAIToolsUseApi: isBAI ? true : undefined,
+          BAIToolsPlanIndex: isBAI ? 0 : undefined,
+          BAIToolsLocale: isBAI ? 'en' : undefined,
+          iconPath: isAlternative ? alternativeIconPath || undefined : undefined,
+          fullDescription: isAlternative ? alternativeFullDescription || undefined : undefined,
+          homepageUrl: isAlternative ? url || undefined : undefined,
+          pricingUrl: isAlternative ? alternativePricingUrl || undefined : undefined,
+          type: isAlternative ? alternativeType || undefined : undefined,
+          monetization: isAlternative ? alternativeMonetization || undefined : undefined,
+          status: isAlternative ? alternativeStatus || undefined : undefined,
+          platforms: isAlternative ? alternativePlatforms || undefined : undefined,
+          features: isAlternative ? alternativeFeatures || undefined : undefined,
+          socialLinks: isAlternative ? alternativeSocialLinks || undefined : undefined,
+          alternativeSocialLinkType: isAlternative ? alternativeSocialLinkType || undefined : undefined,
+          alternativePricingName: isAlternative ? alternativePricingName || undefined : undefined,
+          alternativePricingCost: isAlternative ? alternativePricingCost || undefined : undefined,
+          synonyms: isAlternative ? alternativeSynonyms || undefined : undefined,
+          twitterHandle: isTenWords ? tenWordsTwitterHandle || undefined : undefined,
+          tenWordsNewsletter: isTenWords ? tenWordsNewsletter || undefined : undefined,
           pricing: futureToolsPricing || undefined,
           newsletterOptIn: futureToolsNewsletterOptIn ? 'true' : undefined
         })
@@ -356,6 +527,13 @@ export default function SubmitWebsite() {
     setTimeout(() => setCopiedDataId(null), 2000);
   };
 
+  const handleAddAlternativeSocialLink = () => {
+    const nextUrl = alternativeSocialLinkUrl.trim();
+    if (!nextUrl) return;
+    setAlternativeSocialLinks((current) => (current ? `${current}, ${nextUrl}` : nextUrl));
+    setAlternativeSocialLinkUrl('');
+  };
+
   // Filtered platforms logic
   const filteredPlatforms = platforms.filter(platform => {
     const matchesSearch = platform.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -367,9 +545,20 @@ export default function SubmitWebsite() {
   });
 
   const activePlatform = platforms.find(p => p.id === selectedPlatformId);
+  const isActivePlatformTenWords = activePlatform?.code?.toLowerCase() === '10words';
+  const isActivePlatformBAI = activePlatform?.code?.toLowerCase() === 'baitools';
   const isActivePlatformStackShare = activePlatform?.code?.toLowerCase() === 'stackshare';
   const isActivePlatformASR = activePlatform?.code?.toLowerCase() === 'asr' || activePlatform?.code?.toLowerCase() === 'active_search_results';
   const isActivePlatformFutureTools = activePlatform?.code?.toLowerCase() === 'futuretools';
+  const isActivePlatformAlternative = activePlatform?.code?.toLowerCase() === 'alternative';
+  const tenWordsPreviewData = isActivePlatformTenWords ? {
+    project_name: siteName,
+    project_url: url,
+    description,
+    twitter_handle: tenWordsTwitterHandle,
+    category: tenWordsCategory,
+    newsletter: tenWordsNewsletter,
+  } : null;
 
   // Platform specific static metadata for visual cards (like tags and short descriptions in the reference image)
   const getPlatformMetadata = (code) => {
@@ -383,11 +572,38 @@ export default function SubmitWebsite() {
         typeLabel: 'AUTOMATION'
       };
     }
+    if (normalized === '10words') {
+      return {
+        tags: ['AI Tools', 'OAuth', 'Automation'],
+        description: 'Mở portal 10words, điền form submit project bằng browser thật và lưu đúng session nếu cần xác thực.',
+        speed: '1-2 phút',
+        cost: 'Free',
+        typeLabel: 'AUTOMATION'
+      };
+    }
+    if (normalized === 'baitools') {
+      return {
+        tags: ['AI Tools', 'OAuth', 'Automation'],
+        description: 'Mở form submit của BAI.tools, tự động điền dữ liệu dự án AI và chuyển tới trang finish sau submit.',
+        speed: '1-2 phút',
+        cost: 'Free',
+        typeLabel: 'AUTOMATION'
+      };
+    }
     if (normalized === 'futuretools') {
       return {
         tags: ['AI Tools', 'No Login', 'Automation'],
         description: 'Mở trang submit của Future Tools, tự động điền form giới thiệu công cụ AI và bấm submit bằng browser thật.',
         speed: '1-2 phút',
+        cost: 'Free',
+        typeLabel: 'AUTOMATION'
+      };
+    }
+    if (normalized === 'alternative') {
+      return {
+        tags: ['Software', 'Login Required', 'Automation'],
+        description: 'Mở form Software Submission của Alternative, chờ đăng nhập thủ công nếu cần rồi tự động điền và gửi form.',
+        speed: '2-4 phút',
         cost: 'Free',
         typeLabel: 'AUTOMATION'
       };
@@ -1038,11 +1254,37 @@ export default function SubmitWebsite() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
                   <h2 className="form-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                     {isActivePlatformStackShare ? <Layers size={20} className="input-icon-static" style={{ color: 'hsl(var(--accent-primary))' }} /> : <Globe size={20} className="input-icon-static" style={{ color: 'hsl(var(--accent-primary))' }} />}
-                    {isActivePlatformFutureTools ? 'Submit Tool to Future Tools' : `Submit Website to ${activePlatform.name}`}
+                    {isActivePlatformAlternative
+                      ? 'Submit Software to Alternative'
+                      : isActivePlatformFutureTools
+                        ? 'Submit Tool to Future Tools'
+                        : isActivePlatformTenWords
+                          ? 'Submit Project to 10words'
+                          : isActivePlatformBAI
+                            ? 'Submit AI Tool to BAI.tools'
+                            : `Submit Website to ${activePlatform.name}`}
                   </h2>
                 </div>
 
-                {isActivePlatformFutureTools && (
+                {isActivePlatformAlternative && (
+                  <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    Điền theo đúng form Alternative: Software Name ở bước đầu, rồi Category, Short/Full Description, Homepage URL, Pricing URL, Type, Monetization, Status, Platforms, Screenshots, Videos, Features, Social Links, Pricing và Synonyms ở form sau.
+                  </div>
+                )}
+
+                {isActivePlatformTenWords && (
+                  <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    Điền đúng các field của 10words: Project Name, Project URL, Description, Twitter Handle, Category và Newsletter. Dữ liệu này sẽ được map trực tiếp vào worker.
+                  </div>
+                )}
+
+                {isActivePlatformBAI && (
+                  <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    BAI.tools chỉ cần tên tool và website URL. Phần OAuth sẽ được xử lý ở bước xác thực riêng của worker.
+                  </div>
+                )}
+
+                {isActivePlatformFutureTools && !isActivePlatformAlternative && (
                   <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
                     Điền theo đúng form FutureTools: tên người submit, tên tool, URL, mô tả ngắn, category, pricing, email và checkbox newsletter.
                   </div>
@@ -1063,6 +1305,597 @@ export default function SubmitWebsite() {
                   )}
 
                   {/* FORM FIELDS */}
+                  {isActivePlatformAlternative && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ padding: '1rem', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                          <div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff' }}>Tool mẫu đầy đủ</div>
+                            <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Bấm để đổ đầy toàn bộ dữ liệu vào form Alternative, rồi submit.</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={fillAlternativeFullSample}
+                            className="btn btn-primary"
+                            style={{ width: 'auto', padding: '4px 10px', fontSize: '0.72rem', margin: 0 }}
+                          >
+                            Điền mẫu đầy đủ
+                          </button>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>
+                          Các field bên dưới vẫn cho phép bạn chỉnh tay trước khi bấm Submit.
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Software Name *</label>
+                        <div className="input-wrapper">
+                          <FileText size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="Langflow"
+                            value={siteName}
+                            onChange={(e) => setSiteName(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
+                          <label className="form-label" style={{ marginBottom: 0 }}>Short Description *</label>
+                        </div>
+                        <div className="input-wrapper" style={{ alignItems: 'flex-start' }}>
+                          <FileText size={18} className="input-icon" style={{ marginTop: '0.7rem' }} />
+                          <textarea
+                            placeholder="Build and run LLM workflows with a visual builder for AI apps and automation."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="form-input"
+                            rows={3}
+                            required
+                          />
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))', marginTop: '0.35rem' }}>
+                          Nên nhập ít nhất 100 ký tự để qua validation của Alternative.
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Full Description</label>
+                        <div className="input-wrapper" style={{ alignItems: 'flex-start' }}>
+                          <FileText size={18} className="input-icon" style={{ marginTop: '0.7rem' }} />
+                          <textarea
+                            placeholder="Langflow is a low-code platform for designing, testing, and deploying LLM workflows with reusable components, integrations, and API support."
+                            value={alternativeFullDescription}
+                            onChange={(e) => setAlternativeFullDescription(e.target.value)}
+                            className="form-input"
+                            rows={5}
+                          />
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))', marginTop: '0.35rem' }}>
+                          Nên nhập ít nhất 200 ký tự để qua validation của Alternative.
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Icon Path *</label>
+                        <div className="input-wrapper">
+                          <FileText size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="/Users/.../alternative-icon.png"
+                            value={alternativeIconPath}
+                            onChange={(e) => setAlternativeIconPath(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))', marginTop: '0.35rem' }}>
+                          Đây là đường dẫn file ảnh local để worker upload vào trường Icon.
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '-0.25rem' }}>
+                        Icon đã được map bằng đường dẫn file local. Screenshots và Videos hiện vẫn chưa tự động điền.
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Category *</label>
+                          <select className="form-input" value={alternativeCategory} onChange={(e) => setAlternativeCategory(e.target.value)} required>
+                            {[
+                              { value: 'software/business/analytics', label: 'Business > Analytics' },
+                              { value: 'software/business/productivity-and-communications', label: 'Business > Productivity and Communications' },
+                              { value: 'software/business/customer-support-and-management', label: 'Business > Customer Support and Management' },
+                              { value: 'software/business/finance-and-accounting', label: 'Business > Finance and Accounting' },
+                              { value: 'software/business/human-resources', label: 'Business > Human Resources' },
+                              { value: 'software/business/it-and-operations', label: 'Business > IT and Operations' },
+                              { value: 'software/business/marketing', label: 'Business > Marketing' },
+                              { value: 'software/business/design', label: 'Business > Design' },
+                              { value: 'software/business/sales', label: 'Business > Sales' },
+                              { value: 'software/desktop/business', label: 'Desktop > Business' },
+                              { value: 'software/desktop/tools', label: 'Desktop > Tools' },
+                              { value: 'software/desktop/social', label: 'Desktop > Social' },
+                              { value: 'software/desktop/knowledge', label: 'Desktop > Knowledge' },
+                              { value: 'software/desktop/security', label: 'Desktop > Security' },
+                              { value: 'software/desktop/media', label: 'Desktop > Media' },
+                              { value: 'software/desktop/development', label: 'Desktop > Development' },
+                              { value: 'software/desktop/games', label: 'Desktop > Games' },
+                              { value: 'software/desktop/kids', label: 'Desktop > Kids' },
+                              { value: 'software/desktop/travel', label: 'Desktop > Travel' },
+                              { value: 'software/desktop/news', label: 'Desktop > News' },
+                              { value: 'software/desktop/health', label: 'Desktop > Health' },
+                              { value: 'software/desktop/lifestyle', label: 'Desktop > Lifestyle' },
+                              { value: 'software/mobile/books', label: 'Mobile > Books' },
+                              { value: 'software/mobile/business', label: 'Mobile > Business' },
+                              { value: 'software/mobile/education', label: 'Mobile > Education' },
+                              { value: 'software/mobile/entertainment', label: 'Mobile > Entertainment' },
+                              { value: 'software/mobile/finance', label: 'Mobile > Finance' },
+                              { value: 'software/mobile/food-drink', label: 'Mobile > Food & Drink' },
+                              { value: 'software/mobile/games', label: 'Mobile > Games' },
+                              { value: 'software/mobile/health-fitness', label: 'Mobile > Health & Fitness' },
+                              { value: 'software/mobile/lifestyle', label: 'Mobile > Lifestyle' },
+                              { value: 'software/mobile/kids', label: 'Mobile > Kids' },
+                              { value: 'software/mobile/magazines-newspapers', label: 'Mobile > Magazines & Newspapers' },
+                              { value: 'software/mobile/medical', label: 'Mobile > Medical' },
+                              { value: 'software/mobile/music', label: 'Mobile > Music' },
+                              { value: 'software/mobile/navigation', label: 'Mobile > Navigation' },
+                              { value: 'software/mobile/news', label: 'Mobile > News' },
+                              { value: 'software/mobile/photo-video', label: 'Mobile > Photo & Video' },
+                              { value: 'software/mobile/productivity', label: 'Mobile > Productivity' },
+                              { value: 'software/mobile/reference', label: 'Mobile > Reference' },
+                              { value: 'software/mobile/shopping', label: 'Mobile > Shopping' },
+                              { value: 'software/mobile/social-networking', label: 'Mobile > Social Networking' },
+                              { value: 'software/mobile/sports', label: 'Mobile > Sports' },
+                              { value: 'software/mobile/travel', label: 'Mobile > Travel' },
+                              { value: 'software/mobile/utilities', label: 'Mobile > Utilities' },
+                              { value: 'software/mobile/weather', label: 'Mobile > Weather' },
+                              { value: 'software/mobile/widget', label: 'Mobile > Widget' },
+                              { value: 'software/web/business', label: 'Web > Business' },
+                              { value: 'software/web/tools', label: 'Web > Tools' },
+                              { value: 'software/web/social', label: 'Web > Social' },
+                              { value: 'software/web/knowledge', label: 'Web > Knowledge' },
+                              { value: 'software/web/security', label: 'Web > Security' },
+                              { value: 'software/web/media', label: 'Web > Media' },
+                              { value: 'software/web/development', label: 'Web > Development' },
+                              { value: 'software/web/games', label: 'Web > Games' },
+                              { value: 'software/web/kids', label: 'Web > Kids' },
+                              { value: 'software/web/travel', label: 'Web > Travel' },
+                              { value: 'software/web/news', label: 'Web > News' },
+                              { value: 'software/web/health', label: 'Web > Health' },
+                              { value: 'software/web/lifestyle', label: 'Web > Lifestyle' },
+                              { value: 'software/os/os', label: 'Software > Operating System' },
+                            ].map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Homepage URL *</label>
+                          <div className="input-wrapper">
+                            <Globe size={18} className="input-icon" />
+                            <input
+                              type="text"
+                              placeholder="https://example.com"
+                              value={url}
+                              onChange={(e) => setUrl(e.target.value)}
+                              className="form-input"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Pricing URL</label>
+                          <div className="input-wrapper">
+                            <Globe size={18} className="input-icon" />
+                            <input
+                              type="text"
+                              placeholder="Pricing URL"
+                              value={alternativePricingUrl}
+                              onChange={(e) => setAlternativePricingUrl(e.target.value)}
+                              className="form-input"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Type</label>
+                          <select className="form-input" value={alternativeType} onChange={(e) => setAlternativeType(e.target.value)}>
+                            {[
+                              { value: 'desktop', label: 'Desktop Client' },
+                              { value: 'app', label: 'App' },
+                              { value: 'online', label: 'Online / SaaS' },
+                            ].map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Monetization</label>
+                          <select className="form-input" value={alternativeMonetization} onChange={(e) => setAlternativeMonetization(e.target.value)}>
+                            {[
+                              { value: 'opensource', label: 'Open Source' },
+                              { value: 'free', label: 'Free' },
+                              { value: 'freemium', label: 'Freemium' },
+                              { value: 'paid', label: 'Paid' },
+                            ].map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Status</label>
+                          <select className="form-input" value={alternativeStatus} onChange={(e) => setAlternativeStatus(e.target.value)}>
+                            {[
+                              { value: 'announced', label: 'Announced' },
+                              { value: 'live', label: 'Released' },
+                              { value: 'abandoned', label: 'Abandoned' },
+                              { value: 'offline', label: 'Offline' },
+                            ].map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Platforms</label>
+                        <div className="input-wrapper">
+                          <input
+                            type="text"
+                            placeholder="Please select all matching platforms from the list below."
+                            value={alternativePlatforms}
+                            onChange={(e) => setAlternativePlatforms(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.4rem' }}>
+                          Nhập danh sách nền tảng rồi bấm Enter hoặc Add Platform ở form gốc. UI sẽ gửi chuỗi này cho worker để tách thành tag.
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Features</label>
+                        <div className="input-wrapper">
+                          <input
+                            type="text"
+                            placeholder="Start typing features and click to select ..."
+                            value={alternativeFeatures}
+                            onChange={(e) => setAlternativeFeatures(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.4rem' }}>
+                          Nhập các feature cách nhau bằng dấu phẩy, worker sẽ tự gửi lần lượt.
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Social Links</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr auto', gap: '0.75rem', alignItems: 'center' }}>
+                          <select className="form-input" value={alternativeSocialLinkType} onChange={(e) => setAlternativeSocialLinkType(e.target.value)}>
+                            {[
+                              { value: 'angellist', label: 'AngelList' },
+                              { value: 'facebook', label: 'Facebook' },
+                              { value: 'github', label: 'GitHub' },
+                              { value: 'instagram', label: 'Instagram' },
+                              { value: 'medium-platform', label: 'Medium' },
+                              { value: 'steam', label: 'Steam' },
+                              { value: 'source', label: 'Source' },
+                              { value: 'twitter', label: 'Twitter' },
+                              { value: 'discord', label: 'Discord' },
+                            ].map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="text"
+                            placeholder="https://..."
+                            value={alternativeSocialLinkUrl}
+                            onChange={(e) => setAlternativeSocialLinkUrl(e.target.value)}
+                            className="form-input"
+                          />
+                          <button type="button" className="btn btn-primary" style={{ width: 'auto', padding: '0.65rem 1rem' }} onClick={handleAddAlternativeSocialLink}>
+                            Add Link
+                          </button>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.4rem' }}>
+                          Form thật yêu cầu chọn Link Type rồi bấm Add Link. UI này hiển thị đúng cấu trúc đó.
+                        </div>
+                        {alternativeSocialLinks && (
+                          <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-secondary))', marginTop: '0.4rem' }}>
+                            Đã thêm: {alternativeSocialLinks}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Pricing Name</label>
+                          <input
+                            type="text"
+                            placeholder="Premium"
+                            value={alternativePricingName}
+                            onChange={(e) => setAlternativePricingName(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label className="form-label">Pricing Cost</label>
+                          <input
+                            type="text"
+                            placeholder="Cost per month (USD)"
+                            value={alternativePricingCost}
+                            onChange={(e) => setAlternativePricingCost(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <button type="button" className="btn btn-primary" style={{ width: 'auto', padding: '0.65rem 1rem' }}>
+                          Add Pricing
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '-0.6rem' }}>
+                        Nhập xong Pricing Name/Cost rồi bấm Add Pricing trên form thật.
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Synonyms</label>
+                        <div className="input-wrapper">
+                          <input
+                            type="text"
+                            placeholder="Add synonyms and press Enter..."
+                            value={alternativeSynonyms}
+                            onChange={(e) => setAlternativeSynonyms(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.4rem' }}>
+                          Đây là tag input, nhập từng cụm rồi bấm Enter.
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {isActivePlatformTenWords && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{
+                        padding: '1rem 1.1rem',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(59, 130, 246, 0.18)',
+                        background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(255,255,255,0.02))'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ minWidth: '220px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.35rem' }}>
+                              <Send size={16} style={{ color: 'hsl(var(--accent-primary))' }} />
+                              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>10words Submit Form</div>
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', lineHeight: 1.5 }}>
+                              Form này map trực tiếp vào payload gửi lên worker hoặc API của 10words. Chỉ cần điền 5 trường chính là đủ.
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="btn btn-outline"
+                              style={{ width: 'auto', padding: '0.5rem 0.85rem', margin: 0 }}
+                              onClick={fillTenWordsQuickSample}
+                            >
+                              Quick fill
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              style={{ width: 'auto', padding: '0.5rem 0.85rem', margin: 0 }}
+                              onClick={fillTenWordsDemoSample}
+                            >
+                              Demo data
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.3fr) minmax(280px, 0.9fr)', gap: '1rem', alignItems: 'start' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label">Project Name *</label>
+                            <div className="input-wrapper">
+                              <FileText size={18} className="input-icon" />
+                              <input
+                                type="text"
+                                placeholder="Langflow"
+                                value={siteName}
+                                onChange={(e) => setSiteName(e.target.value)}
+                                className="form-input"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label">Project URL *</label>
+                            <div className="input-wrapper">
+                              <Globe size={18} className="input-icon" />
+                              <input
+                                type="text"
+                                placeholder="https://www.langflow.org"
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                className="form-input"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label">Description *</label>
+                            <div className="input-wrapper" style={{ alignItems: 'flex-start' }}>
+                              <FileText size={18} className="input-icon" style={{ marginTop: '0.7rem' }} />
+                              <textarea
+                                placeholder="Describe your project in 10 words or less!"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="form-input"
+                                rows={4}
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label className="form-label">Category *</label>
+                              <select
+                                className="form-input"
+                                value={tenWordsCategory}
+                                onChange={(e) => setTenWordsCategory(e.target.value)}
+                                required
+                              >
+                                {['Website', 'Mobile App', 'SaaS', 'Newsletter', 'Other'].map((option) => (
+                                  <option key={option} value={option}>{option}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label className="form-label">Twitter Handle</label>
+                              <input
+                                type="text"
+                                placeholder="@langflow"
+                                value={tenWordsTwitterHandle}
+                                onChange={(e) => setTenWordsTwitterHandle(e.target.value)}
+                                className="form-input"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label">Newsletter</label>
+                            <select
+                              className="form-input"
+                              value={tenWordsNewsletter}
+                              onChange={(e) => setTenWordsNewsletter(e.target.value)}
+                            >
+                              {['No thanks', 'Daily', 'Daily (Mon-Thu)', 'Weekly', 'Weekly Digest'].map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div style={{
+                          borderRadius: '16px',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          background: 'rgba(255,255,255,0.02)',
+                          padding: '1rem',
+                          position: 'sticky',
+                          top: '1rem'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                            <div>
+                              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff' }}>Payload Preview</div>
+                              <div style={{ fontSize: '0.72rem', color: 'hsl(var(--text-muted))' }}>Dữ liệu sẽ được map sang worker.</div>
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-outline"
+                              style={{ width: 'auto', padding: '0.35rem 0.65rem', margin: 0, fontSize: '0.72rem' }}
+                              onClick={() => copyToClipboard(JSON.stringify(tenWordsPreviewData, null, 2), 'tenwords-preview')}
+                            >
+                              {copiedDataId === 'tenwords-preview' ? <Check size={12} /> : <Copy size={12} />}
+                              {copiedDataId === 'tenwords-preview' ? 'Copied' : 'Copy JSON'}
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.75rem' }}>
+                            {['Project Name', 'Project URL', 'Description', 'Category', 'Newsletter'].map((label) => (
+                              <span
+                                key={label}
+                                style={{
+                                  fontSize: '0.64rem',
+                                  padding: '2px 7px',
+                                  borderRadius: '999px',
+                                  background: 'rgba(59,130,246,0.08)',
+                                  color: 'hsl(var(--accent-primary))',
+                                  border: '1px solid rgba(59,130,246,0.14)'
+                                }}
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+
+                          <pre style={{
+                            margin: 0,
+                            padding: '0.9rem',
+                            borderRadius: '12px',
+                            background: '#0b1120',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            color: '#cbd5e1',
+                            fontSize: '0.72rem',
+                            overflowX: 'auto',
+                            whiteSpace: 'pre-wrap',
+                            lineHeight: 1.45,
+                            minHeight: '260px'
+                          }}>
+                            {JSON.stringify(tenWordsPreviewData, null, 2)}
+                          </pre>
+
+                          <div style={{ marginTop: '0.75rem', fontSize: '0.72rem', color: 'hsl(var(--text-muted))', lineHeight: 1.5 }}>
+                            Nếu bạn submit bằng API token, worker sẽ bỏ qua browser và gửi trực tiếp lên <code style={{ color: '#fff' }}>app.10words.io/startups/</code>.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {isActivePlatformBAI && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">AI Tool Name *</label>
+                        <div className="input-wrapper">
+                          <FileText size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="What is the name of your AI tool?"
+                            value={siteName}
+                            onChange={(e) => setSiteName(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Website URL *</label>
+                        <div className="input-wrapper">
+                          <Globe size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="https://example.com"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {isActivePlatformFutureTools ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <div className="form-group" style={{ marginBottom: 0 }}>
@@ -1306,14 +2139,22 @@ export default function SubmitWebsite() {
                       className="btn btn-primary"
                       style={{ width: 'auto', padding: '0.75rem 2rem', fontSize: '0.9rem' }}
                     >
-                          {isSubmittingJob ? (
-                            <div className="spinner"></div>
-                          ) : (
-                            <>
-                              <Send size={16} /> 
-                          {isActivePlatformFutureTools ? 'Submit Tool' : (isActivePlatformStackShare ? 'Crawl & Submit Website' : 'Submit Website Direct')}
-                            </>
-                          )}
+                      {isSubmittingJob ? (
+                        <div className="spinner"></div>
+                      ) : (
+                        <>
+                          <Send size={16} />
+                          {isActivePlatformFutureTools
+                            ? 'Submit Tool'
+                            : isActivePlatformTenWords
+                              ? 'Submit Project'
+                              : isActivePlatformBAI
+                                ? 'Submit AI Tool'
+                                : isActivePlatformStackShare
+                                  ? 'Crawl & Submit Website'
+                                  : 'Submit Website Direct'}
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>

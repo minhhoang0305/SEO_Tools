@@ -1,5 +1,6 @@
 # pyrefly: ignore [missing-import]
 import asyncpg
+import json
 import uuid
 
 
@@ -191,6 +192,12 @@ class PostgresRepository:
     async def update_submit_job_detail_status(self, detail_id, status, error_message=None, response_data=None):
         conn = await self.get_connection()
         detail_uuid = uuid.UUID(detail_id) if isinstance(detail_id, str) else detail_id
+
+        if response_data is not None and not isinstance(response_data, str):
+            try:
+                response_data = json.dumps(response_data, ensure_ascii=False)
+            except Exception:
+                response_data = str(response_data)
         
         await conn.execute(
             """
