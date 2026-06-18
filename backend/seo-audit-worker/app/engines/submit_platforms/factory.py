@@ -3,6 +3,9 @@ from app.engines.submit_platforms.api_platforms.active_search_results import Act
 from app.engines.submit_platforms.browser_platforms.alternative import AlternativeSubmitHandler
 from app.engines.submit_platforms.browser_platforms.baitools import BAItoolsSubmitHandler
 from app.engines.submit_platforms.browser_platforms.futuretools import FutureToolsSubmitHandler
+from app.engines.submit_platforms.browser_platforms.awesome_indie import AwesomeIndieSubmitHandler
+from app.engines.submit_platforms.browser_platforms.kyi_ai import KYIAiSubmitHandler
+from app.engines.submit_platforms.browser_platforms.newaiforyou import NewAIForYouSubmitHandler
 from app.engines.submit_platforms.browser_platforms.productburst import ProductBurstSubmitHandler
 from app.engines.submit_platforms.browser_platforms.tenwords import TenWordsSubmitHandler
 from app.engines.submit_platforms.browser_platforms.stackshare import StackShareSubmitHandler
@@ -24,6 +27,12 @@ class PlatformSubmitFactory:
             return TenWordsSubmitHandler(platform_info, db_repo)
         elif code == "stackshare":
             return StackShareSubmitHandler(platform_info, db_repo)
+        elif code in ["kyi", "kyi_ai", "kyiai"]:
+            return KYIAiSubmitHandler(platform_info, db_repo)
+        elif code in ["awesomeindie", "awesome_indie", "awesome-indie"]:
+            return AwesomeIndieSubmitHandler(platform_info, db_repo)
+        elif code in ["newaiforyou", "new_ai_for_you", "new-ai-for-you"]:
+            return NewAIForYouSubmitHandler(platform_info, db_repo)
         elif code == "productburst":
             return ProductBurstSubmitHandler(platform_info, db_repo)
         else:

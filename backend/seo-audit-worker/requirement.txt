@@ -6,3 +6,4 @@ asyncpg
 playwright
 cryptography
 tenacity
+playwright-stealth

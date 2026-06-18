@@ -42,6 +42,9 @@ public class CreateSubmitJobRequest
     public bool? BAIToolsUseApi { get; set; }
     public int? BAIToolsPlanIndex { get; set; }
     public string? BAIToolsLocale { get; set; }
+    public bool? KyiAiDebugHeadful { get; set; }
+    public bool? AwesomeIndieDebugHeadful { get; set; }
+    public bool? NewAIForYouDebugHeadful { get; set; }
     public string? FullDescription { get; set; }
     public string? IconPath { get; set; }
     public string? HomepageUrl { get; set; }
@@ -52,6 +55,7 @@ public class CreateSubmitJobRequest
     public string? Platforms { get; set; }
     public string? Features { get; set; }
     public string? SocialLinks { get; set; }
+    public string? YouTubeVideoUrl { get; set; }
     public string? AlternativeSocialLinkType { get; set; }
     public string? AlternativePricingName { get; set; }
     public string? AlternativePricingCost { get; set; }

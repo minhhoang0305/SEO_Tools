@@ -58,6 +58,11 @@ export default function SubmitWebsite() {
   const [alternativeTestPricingName, setAlternativeTestPricingName] = useState('');
   const [alternativeTestPricingCost, setAlternativeTestPricingCost] = useState('');
   const [alternativeTestSynonyms, setAlternativeTestSynonyms] = useState('');
+  const [awesomeIndieTagline, setAwesomeIndieTagline] = useState('');
+  const [awesomeIndieCategories, setAwesomeIndieCategories] = useState('AI Tools, Productivity');
+  const [awesomeIndieDescription, setAwesomeIndieDescription] = useState('');
+  const [awesomeIndieSocialLinks, setAwesomeIndieSocialLinks] = useState('');
+  const [awesomeIndieYouTubeVideoUrl, setAwesomeIndieYouTubeVideoUrl] = useState('');
   
   // Dashboard platform selection & filtering
   const [platforms, setPlatforms] = useState([]);
@@ -85,7 +90,7 @@ export default function SubmitWebsite() {
   const [jobsError, setJobsError] = useState('');
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [jobDetails, setJobDetails] = useState(null);
-  const [isLoadingJobDetails, setIsLoadingJobDetails] = useState(false);
+  const [isLoadingJobDetails, setIsLoadingJobDetails] = useState(false);  
   const [jobDetailsError, setJobDetailsError] = useState('');
   const [isRefreshingHistory, setIsRefreshingHistory] = useState(false);
 
@@ -109,7 +114,7 @@ export default function SubmitWebsite() {
       const data = await response.json();
       setPlatforms(data);
       
-      const preferredCodes = ['10words', 'baitools', 'alternative', 'futuretools', 'productburst', 'stackshare'];
+      const preferredCodes = ['newaiforyou', 'new_ai_for_you', 'awesome_indie', 'awesomeindie', 'kyi_ai', 'kyi', '10words', 'baitools', 'alternative', 'futuretools', 'productburst', 'stackshare'];
       const preferredPlatform = preferredCodes
         .map((code) => data.find((platform) => platform.code?.toLowerCase() === code))
         .find(Boolean);
@@ -237,7 +242,7 @@ export default function SubmitWebsite() {
     setAlternativePricingName(alternativeTestPricingName);
     setAlternativePricingCost(alternativeTestPricingCost);
     setAlternativeSynonyms(alternativeTestSynonyms);
-    setAlternativeIconPath('/Users/nolanpham/Documents/SEO_Tools/backend/seo-audit-worker/.playwright/alternative-icon.png');
+    setAlternativeIconPath('');
   };
 
   const fillAlternativeFullSample = () => {
@@ -286,10 +291,30 @@ export default function SubmitWebsite() {
     setAlternativeIconPath('/Users/nolanpham/Documents/SEO_Tools/backend/seo-audit-worker/.playwright/alternative-icon.png');
   };
 
+  const fillNewAIForYouDemoSample = () => {
+    setSiteName('Langflow');
+    setUrl('https://www.langflow.org');
+  };
+
+  const fillAwesomeIndieDemoSample = () => {
+    setSiteName('Langflow');
+    setUrl('https://www.langflow.org');
+    setAwesomeIndieTagline('Build and ship LLM workflows visually');
+    setAwesomeIndieCategories('AI Tools, Productivity');
+    setAwesomeIndieDescription(
+      'Langflow is a low-code platform for designing, testing, and deploying LLM workflows with reusable components, integrations, and API support.'
+    );
+    setAwesomeIndieSocialLinks('https://x.com/langflow, https://github.com/langflow-ai/langflow');
+    setAwesomeIndieYouTubeVideoUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    setDescription(
+      'Langflow is a low-code platform for designing, testing, and deploying LLM workflows with reusable components, integrations, and API support.'
+    );
+  };
+
   const fillTenWordsQuickSample = () => {
     setSiteName('SEO TOOLS');
     setUrl('https://example.com');
-    setDescription('A modern SEO toolkit for audits, crawling, and automated platform submission.');
+    setDescription('A modern SEO toolkit');
     setTenWordsTwitterHandle('@seotools');
     setTenWordsCategory('Website');
     setTenWordsNewsletter('No thanks');
@@ -298,7 +323,7 @@ export default function SubmitWebsite() {
   const fillTenWordsDemoSample = () => {
     setSiteName('Langflow');
     setUrl('https://www.langflow.org');
-    setDescription('Build and run LLM workflows with a visual builder for AI apps and automation.');
+    setDescription('Build and run LLM');
     setTenWordsTwitterHandle('@langflow');
     setTenWordsCategory('SaaS');
     setTenWordsNewsletter('Weekly');
@@ -320,11 +345,26 @@ export default function SubmitWebsite() {
     }
 
     const currentPlatform = platforms.find(p => p.id === selectedPlatformId);
+    const isNewAIForYou = currentPlatform?.code?.toLowerCase() === 'newaiforyou' || currentPlatform?.code?.toLowerCase() === 'new_ai_for_you' || currentPlatform?.code?.toLowerCase() === 'new-ai-for-you';
+    const isAwesomeIndie = currentPlatform?.code?.toLowerCase() === 'awesome_indie' || currentPlatform?.code?.toLowerCase() === 'awesomeindie' || currentPlatform?.code?.toLowerCase() === 'awesome-indie';
     const isTenWords = currentPlatform?.code?.toLowerCase() === '10words';
     const isBAI = currentPlatform?.code?.toLowerCase() === 'baitools';
     const isASR = currentPlatform?.code?.toLowerCase() === 'asr' || currentPlatform?.code?.toLowerCase() === 'active_search_results';
     const isFutureTools = currentPlatform?.code?.toLowerCase() === 'futuretools';
     const isAlternative = currentPlatform?.code?.toLowerCase() === 'alternative';
+
+    if (isNewAIForYou) {
+      if (!siteName) return setSubmitError('Vui lòng nhập Tool name cho New AI For You.');
+      if (!url) return setSubmitError('Vui lòng nhập URL cho New AI For You.');
+    }
+
+    if (isAwesomeIndie) {
+      if (!siteName) return setSubmitError('Vui lòng nhập Product name cho Awesome Indie.');
+      if (!url) return setSubmitError('Vui lòng nhập URL cho Awesome Indie.');
+      if (!awesomeIndieTagline) return setSubmitError('Vui lòng nhập Tagline cho Awesome Indie.');
+      if (!awesomeIndieCategories) return setSubmitError('Vui lòng nhập Categories cho Awesome Indie.');
+      if (!awesomeIndieDescription) return setSubmitError('Vui lòng nhập Description cho Awesome Indie.');
+    }
 
     if (isTenWords) {
       if (!siteName) return setSubmitError('Vui lòng nhập Project Name cho 10words.');
@@ -368,6 +408,8 @@ export default function SubmitWebsite() {
     
     try {
       const currentPlatform = platforms.find(p => p.id === selectedPlatformId);
+      const isNewAIForYou = currentPlatform?.code?.toLowerCase() === 'newaiforyou' || currentPlatform?.code?.toLowerCase() === 'new_ai_for_you' || currentPlatform?.code?.toLowerCase() === 'new-ai-for-you';
+      const isAwesomeIndie = currentPlatform?.code?.toLowerCase() === 'awesome_indie' || currentPlatform?.code?.toLowerCase() === 'awesomeindie' || currentPlatform?.code?.toLowerCase() === 'awesome-indie';
       const isTenWords = currentPlatform?.code?.toLowerCase() === '10words';
       const isBAI = currentPlatform?.code?.toLowerCase() === 'baitools';
       const isAlternative = currentPlatform?.code?.toLowerCase() === 'alternative';
@@ -382,21 +424,30 @@ export default function SubmitWebsite() {
           websiteUrl: url,
           platformIds: [selectedPlatformId],
           siteName: siteName || undefined,
-          description: description || undefined,
+          description: isAwesomeIndie ? awesomeIndieDescription || undefined : description || undefined,
           sitemapUrl: sitemapUrl || undefined,
           contactEmail: contactEmail || undefined,
           yourName: submitterName || undefined,
+          tagline: isAwesomeIndie ? awesomeIndieTagline || undefined : undefined,
+          categories: isAwesomeIndie ? awesomeIndieCategories || undefined : isTenWords ? tenWordsCategory || undefined : isAlternative ? alternativeCategory || undefined : undefined,
+          socialLinks: isAwesomeIndie ? awesomeIndieSocialLinks || undefined : isAlternative ? alternativeSocialLinks || undefined : undefined,
+          YouTubeVideoUrl: isAwesomeIndie ? awesomeIndieYouTubeVideoUrl || undefined : undefined,
           category: isTenWords
             ? tenWordsCategory || undefined
             : isAlternative
               ? alternativeCategory || undefined
               : isBAI
                 ? 'Website'
-                : futureToolsCategory || undefined,
+                : isAwesomeIndie
+                  ? undefined
+                  : futureToolsCategory || undefined,
           tenWordsCategory: isTenWords ? tenWordsCategory || undefined : undefined,
           BAIToolsUseApi: isBAI ? true : undefined,
           BAIToolsPlanIndex: isBAI ? 0 : undefined,
           BAIToolsLocale: isBAI ? 'en' : undefined,
+          KyiAiDebugHeadful: isActivePlatformKyi ? true : undefined,
+          AwesomeIndieDebugHeadful: isAwesomeIndie ? true : undefined,
+          NewAIForYouDebugHeadful: isNewAIForYou ? true : undefined,
           iconPath: isAlternative ? alternativeIconPath || undefined : undefined,
           fullDescription: isAlternative ? alternativeFullDescription || undefined : undefined,
           homepageUrl: isAlternative ? url || undefined : undefined,
@@ -545,6 +596,9 @@ export default function SubmitWebsite() {
   });
 
   const activePlatform = platforms.find(p => p.id === selectedPlatformId);
+  const isActivePlatformNewAIForYou = activePlatform?.code?.toLowerCase() === 'newaiforyou' || activePlatform?.code?.toLowerCase() === 'new_ai_for_you' || activePlatform?.code?.toLowerCase() === 'new-ai-for-you';
+  const isActivePlatformAwesomeIndie = activePlatform?.code?.toLowerCase() === 'awesome_indie' || activePlatform?.code?.toLowerCase() === 'awesomeindie' || activePlatform?.code?.toLowerCase() === 'awesome-indie';
+  const isActivePlatformKyi = activePlatform?.code?.toLowerCase() === 'kyi' || activePlatform?.code?.toLowerCase() === 'kyi_ai' || activePlatform?.code?.toLowerCase() === 'kyiai';
   const isActivePlatformTenWords = activePlatform?.code?.toLowerCase() === '10words';
   const isActivePlatformBAI = activePlatform?.code?.toLowerCase() === 'baitools';
   const isActivePlatformStackShare = activePlatform?.code?.toLowerCase() === 'stackshare';
@@ -563,6 +617,33 @@ export default function SubmitWebsite() {
   // Platform specific static metadata for visual cards (like tags and short descriptions in the reference image)
   const getPlatformMetadata = (code) => {
     const normalized = code?.toLowerCase();
+    if (normalized === 'kyi' || normalized === 'kyi_ai' || normalized === 'kyiai') {
+      return {
+        tags: ['AI Tools', 'No Login', 'Public Form'],
+        description: 'Mở trang submit Kyi AI, điền website name, URL và email rồi bấm Submit để chờ pop-up success.',
+        speed: '30-60 giây',
+        cost: 'Free',
+        typeLabel: 'AUTOMATION'
+      };
+    }
+    if (normalized === 'newaiforyou' || normalized === 'new_ai_for_you' || normalized === 'new-ai-for-you') {
+      return {
+        tags: ['AI Tools', 'Google OAuth', 'Modal Success'],
+        description: 'Đăng nhập Google, mở trang submit New AI For You, điền tool name và URL rồi chờ modal success quay về home.',
+        speed: '1-2 phút',
+        cost: 'Free',
+        typeLabel: 'AUTOMATION'
+      };
+    }
+    if (normalized === 'awesome_indie' || normalized === 'awesomeindie' || normalized === 'awesome-indie') {
+      return {
+        tags: ['AI Tools', 'Google OAuth', 'Product Submission'],
+        description: 'Đăng nhập Google, bấm AddProduct để vào trang submit và điền product name, URL, tagline, categories, description, social links và video.',
+        speed: '2-4 phút',
+        cost: 'Free',
+        typeLabel: 'AUTOMATION'
+      };
+    }
     if (normalized === 'stackshare') {
       return {
         tags: ['Developer Tools', 'Automation', 'Social'],
@@ -1256,6 +1337,12 @@ export default function SubmitWebsite() {
                     {isActivePlatformStackShare ? <Layers size={20} className="input-icon-static" style={{ color: 'hsl(var(--accent-primary))' }} /> : <Globe size={20} className="input-icon-static" style={{ color: 'hsl(var(--accent-primary))' }} />}
                     {isActivePlatformAlternative
                       ? 'Submit Software to Alternative'
+                      : isActivePlatformNewAIForYou
+                        ? 'Submit Tool to New AI For You'
+                      : isActivePlatformAwesomeIndie
+                        ? 'Submit Product to Awesome Indie'
+                      : isActivePlatformKyi
+                        ? 'Submit AI Tool to Kyi AI'
                       : isActivePlatformFutureTools
                         ? 'Submit Tool to Future Tools'
                         : isActivePlatformTenWords
@@ -1269,6 +1356,18 @@ export default function SubmitWebsite() {
                 {isActivePlatformAlternative && (
                   <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
                     Điền theo đúng form Alternative: Software Name ở bước đầu, rồi Category, Short/Full Description, Homepage URL, Pricing URL, Type, Monetization, Status, Platforms, Screenshots, Videos, Features, Social Links, Pricing và Synonyms ở form sau.
+                  </div>
+                )}
+
+                {isActivePlatformNewAIForYou && (
+                  <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    New AI For You yêu cầu login Google trước, sau đó vào trang submit và chỉ cần điền Tool name + URL. Sau khi submit sẽ hiện modal rồi tự quay về trang home sau khoảng 6 giây.
+                  </div>
+                )}
+
+                {isActivePlatformAwesomeIndie && (
+                  <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    Awesome Indie yêu cầu login Google trước, sau đó bấm AddProduct để vào form Submit. Điền Product name, URL, Tagline, Categories, Description, Social links và YouTube video URL rồi submit.
                   </div>
                 )}
 
@@ -1287,6 +1386,12 @@ export default function SubmitWebsite() {
                 {isActivePlatformFutureTools && !isActivePlatformAlternative && (
                   <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
                     Điền theo đúng form FutureTools: tên người submit, tên tool, URL, mô tả ngắn, category, pricing, email và checkbox newsletter.
+                  </div>
+                )}
+
+                {isActivePlatformKyi && (
+                  <div style={{ marginBottom: '0.25rem', color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    Kyi AI không cần đăng nhập. Chỉ cần điền Website Name, Website URL và Email rồi submit, hệ thống sẽ chờ pop-up success.
                   </div>
                 )}
 
@@ -1665,6 +1770,278 @@ export default function SubmitWebsite() {
                         </div>
                       </div>
 
+                    </div>
+                  )}
+
+                  {isActivePlatformKyi && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{
+                        padding: '1rem 1.1rem',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(34, 197, 94, 0.18)',
+                        background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(255,255,255,0.02))'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ minWidth: '220px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.35rem' }}>
+                              <Send size={16} style={{ color: 'hsl(var(--accent-primary))' }} />
+                              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>Kyi AI Submit Form</div>
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', lineHeight: 1.5 }}>
+                              Form public, không cần login. UI sẽ gửi đúng 3 field và đợi pop-up success sau khi submit.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Website Name *</label>
+                        <div className="input-wrapper">
+                          <FileText size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="Kyi AI"
+                            value={siteName}
+                            onChange={(e) => setSiteName(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Website URL *</label>
+                        <div className="input-wrapper">
+                          <Globe size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="https://kyi.ai"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Email *</label>
+                        <div className="input-wrapper">
+                          <Mail size={18} className="input-icon" />
+                          <input
+                            type="email"
+                            placeholder="support@kyi.ai"
+                            value={contactEmail}
+                            onChange={(e) => setContactEmail(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {isActivePlatformNewAIForYou && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{
+                        padding: '1rem 1.1rem',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(168, 85, 247, 0.18)',
+                        background: 'linear-gradient(135deg, rgba(168,85,247,0.10), rgba(255,255,255,0.02))'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ minWidth: '220px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.35rem' }}>
+                              <Send size={16} style={{ color: '#a855f7' }} />
+                              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>New AI For You Submit Form</div>
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', lineHeight: 1.5 }}>
+                              Login Google trước, rồi worker sẽ vào trang submit, điền Tool name + URL, chờ modal success và quay về home sau 6 giây.
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="btn btn-outline"
+                              style={{ width: 'auto', padding: '0.5rem 0.85rem', margin: 0 }}
+                              onClick={fillNewAIForYouDemoSample}
+                            >
+                              Demo data
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Tool name *</label>
+                        <div className="input-wrapper">
+                          <FileText size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="Langflow"
+                            value={siteName}
+                            onChange={(e) => setSiteName(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">URL *</label>
+                        <div className="input-wrapper">
+                          <Globe size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="https://www.langflow.org"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {isActivePlatformAwesomeIndie && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{
+                        padding: '1rem 1.1rem',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(245, 158, 11, 0.18)',
+                        background: 'linear-gradient(135deg, rgba(245,158,11,0.10), rgba(255,255,255,0.02))'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ minWidth: '220px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.35rem' }}>
+                              <Send size={16} style={{ color: '#f59e0b' }} />
+                              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>Awesome Indie Submit Form</div>
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', lineHeight: 1.5 }}>
+                              Login Google trước, bấm AddProduct rồi worker sẽ điền form tạo product và chờ phản hồi từ API post-product.
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className="btn btn-outline"
+                              style={{ width: 'auto', padding: '0.5rem 0.85rem', margin: 0 }}
+                              onClick={fillAwesomeIndieDemoSample}
+                            >
+                              Demo data
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Product Name *</label>
+                        <div className="input-wrapper">
+                          <FileText size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="Langflow"
+                            value={siteName}
+                            onChange={(e) => setSiteName(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">URL *</label>
+                        <div className="input-wrapper">
+                          <Globe size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="https://www.langflow.org"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Tagline *</label>
+                        <div className="input-wrapper">
+                          <FileText size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="Build and ship LLM workflows visually"
+                            value={awesomeIndieTagline}
+                            onChange={(e) => setAwesomeIndieTagline(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Categories *</label>
+                        <div className="input-wrapper">
+                          <Layers size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="AI Tools, Productivity"
+                            value={awesomeIndieCategories}
+                            onChange={(e) => setAwesomeIndieCategories(e.target.value)}
+                            className="form-input"
+                            required
+                          />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.35rem' }}>
+                          Worker sẽ thử map theo text hoặc lấy category đầu tiên từ API `/api/categories/get-categories` nếu cần.
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Description *</label>
+                        <div className="input-wrapper" style={{ alignItems: 'flex-start' }}>
+                          <FileText size={18} className="input-icon" style={{ marginTop: '0.7rem' }} />
+                          <textarea
+                            placeholder="Langflow is a low-code platform for designing, testing, and deploying LLM workflows..."
+                            value={awesomeIndieDescription}
+                            onChange={(e) => setAwesomeIndieDescription(e.target.value)}
+                            className="form-input"
+                            rows={4}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Social Links</label>
+                        <div className="input-wrapper" style={{ alignItems: 'flex-start' }}>
+                          <Globe size={18} className="input-icon" style={{ marginTop: '0.7rem' }} />
+                          <textarea
+                            placeholder="https://x.com/..., https://github.com/..."
+                            value={awesomeIndieSocialLinks}
+                            onChange={(e) => setAwesomeIndieSocialLinks(e.target.value)}
+                            className="form-input"
+                            rows={3}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">YouTube Video URL</label>
+                        <div className="input-wrapper">
+                          <ExternalLink size={18} className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            value={awesomeIndieYouTubeVideoUrl}
+                            onChange={(e) => setAwesomeIndieYouTubeVideoUrl(e.target.value)}
+                            className="form-input"
+                          />
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -2146,13 +2523,15 @@ export default function SubmitWebsite() {
                           <Send size={16} />
                           {isActivePlatformFutureTools
                             ? 'Submit Tool'
-                            : isActivePlatformTenWords
-                              ? 'Submit Project'
-                              : isActivePlatformBAI
-                                ? 'Submit AI Tool'
-                                : isActivePlatformStackShare
-                                  ? 'Crawl & Submit Website'
-                                  : 'Submit Website Direct'}
+                            : isActivePlatformKyi
+                              ? 'Submit AI Tool'
+                              : isActivePlatformTenWords
+                                ? 'Submit Project'
+                                : isActivePlatformBAI
+                                  ? 'Submit AI Tool'
+                                  : isActivePlatformStackShare
+                                    ? 'Crawl & Submit Website'
+                                    : 'Submit Website Direct'}
                         </>
                       )}
                     </button>

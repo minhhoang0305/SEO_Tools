@@ -1,5 +1,4 @@
 import json
-import time
 from typing import Any, Dict, List
 from urllib.parse import urlparse
 
@@ -12,6 +11,99 @@ STACKSHARE_LOGIN_URL = STACKSHARE_BASE_URL
 
 
 class StackShareAuthStrategy(BaseAuthStrategy):
+    def _base_context_args(self) -> Dict[str, Any]:
+        return {
+            "viewport": {"width": 1280, "height": 800},
+            "user_agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/125.0.0.0 Safari/537.36"
+            ),
+            "locale": "en-US",
+            "timezone_id": "America/New_York",
+            "extra_http_headers": {
+                "Accept-Language": "en-US,en;q=0.9",
+            },
+        }
+
+    def _stealth_script(self) -> str:
+        return r"""
+(() => {
+  const define = (object, property, getter) => {
+    try {
+      Object.defineProperty(object, property, {
+        get: getter,
+        configurable: true,
+      });
+    } catch (error) {}
+  };
+
+  define(Navigator.prototype, 'webdriver', () => undefined);
+  define(Navigator.prototype, 'platform', () => 'Win32');
+  define(Navigator.prototype, 'hardwareConcurrency', () => 8);
+  define(Navigator.prototype, 'deviceMemory', () => 8);
+  define(Navigator.prototype, 'languages', () => ['en-US', 'en']);
+
+  try {
+    window.chrome = window.chrome || {};
+    window.chrome.runtime = window.chrome.runtime || {};
+  } catch (error) {}
+
+  try {
+    const originalQuery = window.navigator.permissions && window.navigator.permissions.query;
+    if (originalQuery) {
+      window.navigator.permissions.query = (parameters) => (
+        parameters && parameters.name === 'notifications'
+          ? Promise.resolve({ state: Notification.permission })
+          : originalQuery(parameters)
+      );
+    }
+  } catch (error) {}
+
+  try {
+    const pluginArray = [
+      {
+        name: 'Chrome PDF Plugin',
+        filename: 'internal-pdf-viewer',
+        description: 'Portable Document Format',
+      },
+      {
+        name: 'Chrome PDF Viewer',
+        filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai',
+        description: '',
+      },
+      {
+        name: 'Native Client',
+        filename: 'internal-nacl-plugin',
+        description: '',
+      },
+    ];
+
+    const mimeTypes = [
+      {
+        type: 'application/pdf',
+        suffixes: 'pdf',
+        description: '',
+        enabledPlugin: pluginArray[0],
+      },
+    ];
+
+    define(Navigator.prototype, 'plugins', () => pluginArray);
+    define(Navigator.prototype, 'mimeTypes', () => mimeTypes);
+  } catch (error) {}
+})();
+"""
+
+    async def _apply_stealth(self, context, page) -> None:
+        await context.add_init_script(self._stealth_script())
+
+        try:
+            from playwright_stealth import stealth_async  # type: ignore
+
+            await stealth_async(page)
+        except Exception:
+            pass
+
     def _parse_cookies(self, raw_cookies: str) -> List[Dict[str, Any]]:
         try:
             cookies_list = json.loads(raw_cookies)
@@ -169,16 +261,9 @@ class StackShareAuthStrategy(BaseAuthStrategy):
         )
 
     async def bootstrap_connect(self, browser, timeout_ms: int = 180000):
-        context_args = {
-            "viewport": {"width": 1280, "height": 800},
-            "user_agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            )
-        }
-        context = await browser.new_context(**context_args)
+        context = await browser.new_context(**self._base_context_args())
         page = await context.new_page()
+        await self._apply_stealth(context, page)
 
         try:
             await self.handler.log_audit(
@@ -212,14 +297,7 @@ class StackShareAuthStrategy(BaseAuthStrategy):
             raise
 
     async def ensure_authenticated(self, browser):
-        context_args = {
-            "viewport": {"width": 1280, "height": 800},
-            "user_agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            )
-        }
+        context_args = self._base_context_args()
         if not await self._materialize_storage_state_file():
             raise ValueError(
                 "Chưa có storage_state của StackShare. Hãy tạo file session local rồi upload vào backend trước khi Submit."
@@ -227,8 +305,9 @@ class StackShareAuthStrategy(BaseAuthStrategy):
         context_args.update(self.session_store.context_kwargs())
 
         context = await browser.new_context(**context_args)
-
         page = await context.new_page()
+        await self._apply_stealth(context, page)
+
         try:
             await self.handler.log_audit(
                 "LoginCheck",

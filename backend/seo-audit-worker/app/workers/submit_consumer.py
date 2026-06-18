@@ -21,6 +21,16 @@ def _debug_print(title: str, payload):
         print(payload)
 
 
+def _submit_timeout_seconds() -> float:
+    raw_value = (os.getenv("SUBMIT_PLATFORM_TIMEOUT_SECONDS", "") or "").strip()
+    if not raw_value:
+        return 300.0
+    try:
+        return max(1.0, float(raw_value))
+    except ValueError:
+        return 300.0
+
+
 async def process_submit_job(message):
     job_id = message["JobId"]
     website_url = message["WebsiteUrl"]
@@ -79,7 +89,10 @@ async def process_submit_job(message):
                 _debug_print("Handler", handler.__class__.__name__)
                 at_least_one_processed = True
                 
-                result = await handler.submit(website_url, metadata, mode=mode)
+                result = await asyncio.wait_for(
+                    handler.submit(website_url, metadata, mode=mode),
+                    timeout=_submit_timeout_seconds(),
+                )
                 _debug_print("SubmitResult", result)
                 
                 if result.get("success"):
@@ -96,6 +109,16 @@ async def process_submit_job(message):
                         error_message=result.get("error_message"),
                         response_data=result.get("response_data")
                     )
+            except asyncio.TimeoutError:
+                all_success = False
+                err_msg = (
+                    "Submit handler chạy quá thời gian cho phép nên job được chuyển sang Failed "
+                    f"để tránh treo ở trạng thái Running ({_submit_timeout_seconds()}s)."
+                )
+                print(err_msg)
+                _debug_print("HandlerTimeout", err_msg)
+                await db_repo.update_submit_job_detail_status(detail_id, "Failed", error_message=err_msg)
+                await db_repo.save_submit_audit_log(detail_id, "SystemTimeout", "Failed", err_msg)
             except Exception as ex:
                 all_success = False
                 err_msg = f"Lỗi không mong muốn khi xử lý submit handler: {str(ex)}"

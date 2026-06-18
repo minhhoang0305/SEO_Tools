@@ -105,6 +105,9 @@ public class CreateSubmitJobService(
         if (request.BAIToolsUseApi.HasValue) metadata["BAIToolsUseApi"] = request.BAIToolsUseApi.Value ? "true" : "false";
         if (request.BAIToolsPlanIndex.HasValue) metadata["BAIToolsPlanIndex"] = request.BAIToolsPlanIndex.Value.ToString();
         if (!string.IsNullOrWhiteSpace(request.BAIToolsLocale)) metadata["BAIToolsLocale"] = request.BAIToolsLocale;
+        if (request.KyiAiDebugHeadful.HasValue) metadata["KyiAiDebugHeadful"] = request.KyiAiDebugHeadful.Value ? "true" : "false";
+        if (request.AwesomeIndieDebugHeadful.HasValue) metadata["AwesomeIndieDebugHeadful"] = request.AwesomeIndieDebugHeadful.Value ? "true" : "false";
+        if (request.NewAIForYouDebugHeadful.HasValue) metadata["NewAIForYouDebugHeadful"] = request.NewAIForYouDebugHeadful.Value ? "true" : "false";
         if (!string.IsNullOrWhiteSpace(request.FullDescription)) metadata["FullDescription"] = request.FullDescription;
         if (!string.IsNullOrWhiteSpace(request.IconPath)) metadata["IconPath"] = request.IconPath;
         if (!string.IsNullOrWhiteSpace(request.HomepageUrl)) metadata["HomepageUrl"] = request.HomepageUrl;
@@ -115,6 +118,7 @@ public class CreateSubmitJobService(
         if (!string.IsNullOrWhiteSpace(request.Platforms)) metadata["Platforms"] = request.Platforms;
         if (!string.IsNullOrWhiteSpace(request.Features)) metadata["Features"] = request.Features;
         if (!string.IsNullOrWhiteSpace(request.SocialLinks)) metadata["SocialLinks"] = request.SocialLinks;
+        if (!string.IsNullOrWhiteSpace(request.YouTubeVideoUrl)) metadata["YouTubeVideoUrl"] = request.YouTubeVideoUrl;
         if (!string.IsNullOrWhiteSpace(request.AlternativeSocialLinkType)) metadata["AlternativeSocialLinkType"] = request.AlternativeSocialLinkType;
         if (!string.IsNullOrWhiteSpace(request.AlternativePricingName)) metadata["AlternativePricingName"] = request.AlternativePricingName;
         if (!string.IsNullOrWhiteSpace(request.AlternativePricingCost)) metadata["AlternativePricingCost"] = request.AlternativePricingCost;

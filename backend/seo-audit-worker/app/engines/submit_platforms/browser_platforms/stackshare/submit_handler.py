@@ -145,20 +145,13 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
         except Exception:
             title = ""
 
-        try:
-            body_text = (await page.locator("body").inner_text(timeout=3000)).strip()
-        except Exception:
-            body_text = ""
-
-        body_text = body_text[:2000]
         await self.log_audit(
             "BrowserDebug",
             "Running",
             (
                 f"[{step}] url={page.url} "
                 f"title={title} "
-                f"artifact_prefix={prefix} "
-                f"body={body_text or '[empty]'}"
+                f"artifact_prefix={prefix}"
             ),
         )
 
@@ -302,7 +295,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
                 if mode.lower() == "preview":
                     await self.log_audit(
                         "UserReview",
-                        "Running",
+                        "Failed",
                         "Đã crawl xong dữ liệu StackShare. Chờ client review và chỉnh sửa trước khi submit."
                     )
                     return {
@@ -329,7 +322,7 @@ class StackShareSubmitHandler(BaseBrowserSubmitHandler):
 
                 await self.log_audit(
                     "UserReview",
-                    "Running",
+                    "Success",
                     "Đã đồng bộ dữ liệu crawl. Nếu cần chỉnh sửa thêm, đây là bước review trước khi submit."
                 )
 

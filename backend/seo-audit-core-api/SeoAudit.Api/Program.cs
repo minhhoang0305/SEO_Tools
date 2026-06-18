@@ -187,6 +187,36 @@ using (var scope = app.Services.CreateScope())
         },
         new SeoPlatform
         {
+            Id = Guid.Parse("c2f9c6d0-8e5c-4e0b-a5d8-5a7d4f0ef2b1"),
+            Name = "Kyi AI",
+            Code = "kyi_ai",
+            WebsiteUrl = "https://kyi.ai",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        },
+        new SeoPlatform
+        {
+            Id = Guid.Parse("e7d3b6a2-2a77-4f7d-9e61-8cf1db3d1c23"),
+            Name = "Awesome Indie",
+            Code = "awesome_indie",
+            WebsiteUrl = "https://awesomeindie.com",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        },
+        new SeoPlatform
+        {
+            Id = Guid.Parse("7b1a2c3d-4e5f-4a6b-8c9d-1e2f3a4b5c6d"),
+            Name = "New AI For You",
+            Code = "newaiforyou",
+            WebsiteUrl = "https://newaiforyou.com",
+            SubmitMethod = "UI_Automation",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        },
+        new SeoPlatform
+        {
             Id = Guid.Parse("d4f0d2a4-0f33-4a71-9f54-8e6c5a3b4a55"),
             Name = "Future Tools",
             Code = "futuretools",

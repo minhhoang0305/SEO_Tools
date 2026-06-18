@@ -7,6 +7,9 @@ from app.auth.strategies.futuretools import FutureToolsAuthStrategy
 from app.auth.strategies.tenwords import TenWordsAuthStrategy
 from app.auth.strategies.productburst import ProductBurstAuthStrategy
 from app.auth.strategies.stackshare import StackShareAuthStrategy
+from app.auth.strategies.awesome_indie import AwesomeIndieAuthStrategy
+from app.auth.strategies.kyi_ai import KYIAiAuthStrategy
+from app.auth.strategies.newaiforyou import NewAIForYouAuthStrategy
 
 
 class AuthStrategyFactory:
@@ -26,5 +29,11 @@ class AuthStrategyFactory:
             return TenWordsAuthStrategy(handler)
         if code == "alternative":
             return AlternativeAuthStrategy(handler)
+        if code in {"kyi", "kyi_ai", "kyiai"}:
+            return KYIAiAuthStrategy(handler)
+        if code in {"awesomeindie", "awesome_indie", "awesome-indie"}:
+            return AwesomeIndieAuthStrategy(handler)
+        if code in {"newaiforyou", "new_ai_for_you", "new-ai-for-you"}:
+            return NewAIForYouAuthStrategy(handler)
 
         raise ValueError(f"Chưa có auth strategy cho platform code: {code}")
