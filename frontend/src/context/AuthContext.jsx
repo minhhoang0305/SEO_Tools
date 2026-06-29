@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -7,11 +8,17 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, isFirebaseConfigured } from '../firebase';
 
 const AuthContext = createContext();
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001';
 const AUTH_SESSION_KEY = 'authSession';
+
+function ensureFirebaseAuth() {
+  if (!isFirebaseConfigured || !auth) {
+    throw new Error('Firebase chưa được cấu hình. Vui lòng kiểm tra các biến VITE_FIREBASE_* trong frontend.');
+  }
+}
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -47,6 +54,7 @@ export function AuthProvider({ children }) {
 
   // Đăng ký tài khoản mới bằng Email/Mật khẩu và cập nhật Display Name
   async function signup(email, password, displayName) {
+    ensureFirebaseAuth();
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     // Cập nhật Profile (tên hiển thị) sau khi tạo tài khoản thành công
     await updateProfile(userCredential.user, {
@@ -58,12 +66,14 @@ export function AuthProvider({ children }) {
 
   // Đăng nhập bằng Email/Mật khẩu
   async function login(email, password) {
+    ensureFirebaseAuth();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return createBackendSession(userCredential.user);
   }
 
   // Đăng xuất
   async function logout() {
+    ensureFirebaseAuth();
     const refreshToken = session?.token?.refreshToken;
 
     if (refreshToken) {
@@ -83,18 +93,32 @@ export function AuthProvider({ children }) {
 
   // Đăng nhập bằng Google
   async function loginWithGoogle() {
+    ensureFirebaseAuth();
     const userCredential = await signInWithPopup(auth, googleProvider);
     return createBackendSession(userCredential.user);
   }
 
   // Theo dõi sự thay đổi trạng thái Authentication của Firebase
   useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      queueMicrotask(() => setLoading(false));
+      return undefined;
+    }
+
+    const loadingFallback = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      clearTimeout(loadingFallback);
       setCurrentUser(user);
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      clearTimeout(loadingFallback);
+      unsubscribe();
+    };
   }, []);
 
   const value = {

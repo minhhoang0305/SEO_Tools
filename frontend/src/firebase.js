@@ -11,11 +11,17 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Khởi tạo Firebase
-const app = initializeApp(firebaseConfig);
+export const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId
+);
 
-// Khởi tạo Firebase Authentication và export
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+// Khởi tạo Firebase khi có đủ env. Nếu thiếu config, UI vẫn render và action auth sẽ báo lỗi rõ ràng.
+const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
+
+export const auth = app ? getAuth(app) : null;
+export const googleProvider = app ? new GoogleAuthProvider() : null;
 
 export default app;
